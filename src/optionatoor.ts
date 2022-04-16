@@ -14,12 +14,7 @@ export default class Optionatoor {
     public async run(): Promise<void> {
         if (!this.isInitialized) throw Error('uninitialized: did you run init()?')
 
-        console.log('Premia Tokens')
-        const premiaTokens = await PremiaService.fetchTokens()
-        console.log(JSON.stringify(premiaTokens))
-
-        console.log('Premia Pools')
-        const premiaPools = await PremiaService.fetchPools()
-        console.log(JSON.stringify(premiaPools))
+        const options = await PremiaService.fetchOptions()
+        console.log(JSON.stringify(options))
     }
 }
