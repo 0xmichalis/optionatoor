@@ -34,6 +34,10 @@ class PremiaService {
         this.linkPool = new Contract(config.get('PREMIA_POOL_LINK'), poolAbi, this.provider)
     }
 
+    fixedToBn(bn64x64: BigNumber, decimals = 18): BigNumber {
+        return bn64x64.mul(BigNumber.from(10).pow(decimals)).shr(64);
+    }
+
     async fetchOptions(): Promise<any> {
         const now = Math.floor(Date.now() / 1000)
         const resp =  await ApiService.graphql(this.subgraphURL, fetchOptionsQuery(now))
@@ -60,10 +64,10 @@ class PremiaService {
                     o.optionType == 'CALL'
                 )
 
-                console.log(`base cost: ${baseCost64x64}`)
-                console.log(`fee cost: ${feeCost64x64}`)
-                console.log(`C level: ${cLevel64x64}`)
-                console.log(`slippage: ${slippageCoefficient64x64}`)
+                console.log(`base cost: ${this.fixedToBn(baseCost64x64)}`)
+                console.log(`fee cost: ${this.fixedToBn(feeCost64x64)}`)
+                console.log(`C level: ${this.fixedToBn(cLevel64x64)}`)
+                console.log(`slippage: ${this.fixedToBn(slippageCoefficient64x64)}`)
                 break
             }
         }
