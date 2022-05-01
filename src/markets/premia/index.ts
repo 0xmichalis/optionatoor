@@ -5,20 +5,23 @@ import ApiService from '../../services/api'
 import { config } from '../../config'
 import { fetchOptionsQuery } from './queries'
 
-const subgraphURL = config.get('PREMIA_SUBGRAPH_API_URL')
-
 class PremiaService {
     // RPC providers
     private provider: providers.StaticJsonRpcProvider
     private multicallProvider: MulticallProvider
+    private subgraphURL: string
 
     private wallet: Wallet
 
+    // Pools
+    private wbtcPool: Contract
+    private wethPool: Contract
     private linkPool: Contract
 
     constructor() {
-        this.provider = new providers.StaticJsonRpcProvider(config.get('NODE_API_URL'))
+        this.provider = new providers.StaticJsonRpcProvider(config.get('PREMIA_NODE_API_URL'))
         this.multicallProvider = new MulticallProvider(this.provider)
+        this.subgraphURL = config.get('PREMIA_SUBGRAPH_API_URL')
 
         this.wallet = new ethers.Wallet(config.get('PRIVATE_KEY'), this.provider)
         console.log(`Keeper address: ${this.wallet.address}`)
@@ -26,7 +29,15 @@ class PremiaService {
         const poolAbi = [
             'function quote(address feePayer, uint64 maturity, int128 strike64x64, uint256 contractSize, bool isCall) external view returns (int128 baseCost64x64, int128 feeCost64x64, int128 cLevel64x64, int128 slippageCoefficient64x64)',
         ]
-        this.linkPool = new Contract('0xf87Ca9EB60c2E40A6C5Ab14ca291934a95F845Ff', poolAbi, this.provider)
+        this.wbtcPool = new Contract(config.get('PREMIA_POOL_WBTC'), poolAbi, this.provider)
+        this.wethPool = new Contract(config.get('PREMIA_POOL_WETH'), poolAbi, this.provider)
+        this.linkPool = new Contract(config.get('PREMIA_POOL_LINK'), poolAbi, this.provider)
+    }
+
+    async fetchOptions(): Promise<any> {
+        const now = Math.floor(Date.now() / 1000)
+        const resp =  await ApiService.graphql(this.subgraphURL, fetchOptionsQuery(now))
+        return resp.data
     }
 
     async fetchPremiums(): Promise<any> {
@@ -56,12 +67,6 @@ class PremiaService {
                 break
             }
         }
-    }
-
-    async fetchOptions(): Promise<any> {
-        const now = Math.floor(Date.now() / 1000)
-        const resp =  await ApiService.graphql(subgraphURL, fetchOptionsQuery(now))
-        return resp.data
     }
 }
 
