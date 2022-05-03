@@ -5,6 +5,8 @@ import ApiService from '../../services/api'
 import { config } from '../../config'
 import { fetchOptionsQuery } from './queries'
 
+const defaultDecimals = 18;
+
 class PremiaService {
     // RPC providers
     private provider: providers.StaticJsonRpcProvider
@@ -34,8 +36,16 @@ class PremiaService {
         this.linkPool = new Contract(config.get('PREMIA_POOL_LINK'), poolAbi, this.provider)
     }
 
-    fixedToBn(bn64x64: BigNumber, decimals = 18): BigNumber {
+    fixedToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
         return bn64x64.mul(BigNumber.from(10).pow(decimals)).shr(64);
+    }
+
+    formatNum(num: BigNumber, decimals = defaultDecimals): string {
+        return utils.formatUnits(num, decimals);
+    }
+
+    format64x64(num: BigNumber): string {
+        return this.formatNum(this.fixedToBn(num));
     }
 
     async fetchOptions(): Promise<any> {
@@ -47,29 +57,25 @@ class PremiaService {
     async fetchPremiums(): Promise<any> {
         const options = await this.fetchOptions()
         for (let o of options.data.options) {
-            if (o.pairName == 'LINK/DAI') {
-                console.log(o)
-                console.log(`maturity: ${new Date(o.maturity*1000)}`)
+            const [
+                baseCost64x64,
+                feeCost64x64,
+            ] = await this.linkPool.quote(
+                this.wallet.address,
+                o.maturity,
+                o.strike64x64,
+                BigNumber.from(utils.parseUnits('1000', defaultDecimals)),
+                o.optionType == 'CALL'
+            )
+            const premium = this.fixedToBn(baseCost64x64).add(this.fixedToBn(feeCost64x64))
 
-                const [
-                    baseCost64x64,
-                    feeCost64x64,
-                    cLevel64x64,
-                    slippageCoefficient64x64
-                ] = await this.linkPool.quote(
-                    this.wallet.address,
-                    o.maturity,
-                    o.strike64x64,
-                    BigNumber.from('1000000000000000000000'),
-                    o.optionType == 'CALL'
-                )
-
-                console.log(`base cost: ${this.fixedToBn(baseCost64x64)}`)
-                console.log(`fee cost: ${this.fixedToBn(feeCost64x64)}`)
-                console.log(`C level: ${this.fixedToBn(cLevel64x64)}`)
-                console.log(`slippage: ${this.fixedToBn(slippageCoefficient64x64)}`)
-                break
-            }
+            console.log()
+            console.log(`Pair: ${o.pairName}`)
+            console.log(`Type: ${o.optionType}`)
+            console.log(`Maturity: ${new Date(o.maturity*1000)}`)
+            console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
+            console.log(`Premium: ${this.formatNum(premium)}`)
+            console.log()
         }
     }
 }
