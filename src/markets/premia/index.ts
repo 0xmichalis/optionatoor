@@ -16,14 +16,14 @@ class PremiaService {
     private wallet: Wallet
 
     // Pools
-    private wbtcPool: Contract
-    private wethPool: Contract
-    private linkPool: Contract
+    private wbtcPool: MulticallContract
+    private wethPool: MulticallContract
+    private linkPool: MulticallContract
 
     // Oracles
-    // private wbtcOracle: Contract
-    // private wethOracle: Contract
-    private linkOracle: Contract
+    private wbtcOracle: MulticallContract
+    private wethOracle: MulticallContract
+    private linkOracle: MulticallContract
 
     // Decimals
     private oracleDecimals = 8
@@ -41,16 +41,20 @@ class PremiaService {
             'function getPoolSettings() external view returns ((address underlying, address base, address underlyingOracle, address baseOracle))',
             'function quote(address feePayer, uint64 maturity, int128 strike64x64, uint256 contractSize, bool isCall) external view returns (int128 baseCost64x64, int128 feeCost64x64, int128 cLevel64x64, int128 slippageCoefficient64x64)',
         ]
-        this.wbtcPool = new Contract(config.get('PREMIA_POOL_WBTC'), poolAbi, this.provider)
-        this.wethPool = new Contract(config.get('PREMIA_POOL_WETH'), poolAbi, this.provider)
-        this.linkPool = new Contract(config.get('PREMIA_POOL_LINK'), poolAbi, this.provider)
+        this.wbtcPool = new MulticallContract(config.get('PREMIA_POOL_WBTC'), poolAbi)
+        this.wethPool = new MulticallContract(config.get('PREMIA_POOL_WETH'), poolAbi)
+        this.linkPool = new MulticallContract(config.get('PREMIA_POOL_LINK'), poolAbi)
 
         const oracleAbi = [
             'function latestAnswer() external view returns (uint256)',
         ]
-        // this.wbtcOracle = new Contract(config.get('ORACLE_WBTC'), oracleAbi, this.provider)
-        // this.wethOracle = new Contract(config.get('ORACLE_WETH'), oracleAbi, this.provider)
-        this.linkOracle = new Contract(config.get('ORACLE_LINK'), oracleAbi, this.provider)
+        this.wbtcOracle = new MulticallContract(config.get('ORACLE_WBTC'), oracleAbi)
+        this.wethOracle = new MulticallContract(config.get('ORACLE_WETH'), oracleAbi)
+        this.linkOracle = new MulticallContract(config.get('ORACLE_LINK'), oracleAbi)
+    }
+
+    async init(): Promise<void> {
+        await this.multicallProvider.init()
     }
 
     bn64x64ToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
@@ -71,37 +75,104 @@ class PremiaService {
         return resp.data
     }
 
-    async fetchPremiums(): Promise<any> {
-        const contractSize = '1000'
+    async fetchPremiums(maxBuyUSD: number): Promise<any> {
+        // Fetch oracle prices first to estimate max
+        // contract size per asset.
+        const oracleCalls = [
+            this.wbtcOracle.latestAnswer(),
+            this.wethOracle.latestAnswer(),
+            this.linkOracle.latestAnswer(),
+        ]
+
+        const [
+            wbtcPrice,
+            wethPrice,
+            linkPrice,
+        ] = await this.multicallProvider.all(oracleCalls)
+
+        console.log(`WBTC/USD: ${this.formatBn(wbtcPrice, this.oracleDecimals)}`)
+        console.log(`WETH/USD: ${this.formatBn(wethPrice, this.oracleDecimals)}`)
+        console.log(`LINK/USD: ${this.formatBn(linkPrice, this.oracleDecimals)}`)
+
+        const calls = []
         const options = await this.fetchOptions()
-
-        const linkPrice = await this.linkOracle.latestAnswer()
-        console.log(`LINK price: ${this.formatBn(linkPrice, this.oracleDecimals)}`)
-        console.log()
-
+    
         for (let o of options.data.options) {
-            if (o.pairName != 'LINK/DAI')
-                continue
+            if (o.pairName == 'YFI/DAI') continue
 
+            // Multiply by 1e8 to match the oracle decimals
+            let contractSize: string
+
+            switch (o.pairName) {
+                case 'WBTC/DAI':
+                    contractSize = '0.05'
+                    break
+                case 'WETH/DAI':
+                    contractSize = '1'
+                    break
+                case 'LINK/DAI':
+                    contractSize = '200'
+                    break
+                default:
+                    throw Error(`unknown pair: ${o.pairName}`)
+            }
+ 
+            calls.push(
+                this.linkPool.quote(
+                    this.wallet.address,
+                    o.maturity,
+                    o.strike64x64,
+                    utils.parseUnits(contractSize, this.linkDecimals),
+                    o.optionType == 'CALL'
+                )
+            )
+        }
+
+        const premiums = await this.multicallProvider.all(calls)
+
+        let i = 0
+        for (let o of options.data.options) {
+            if (o.pairName == 'YFI/DAI') continue
+
+            // Multiply by 1e8 to match the oracle decimals
+            let contractSize: string
+            let price = 0
+
+            switch (o.pairName) {
+                case 'WBTC/DAI':
+                    contractSize = '0.05'
+                    price = wbtcPrice
+                    break
+                case 'WETH/DAI':
+                    contractSize = '1'
+                    price = wethPrice
+                    break
+                case 'LINK/DAI':
+                    contractSize = '200'
+                    price = linkPrice
+                    break
+                default:
+                    throw Error(`unknown pair: ${o.pairName}`)
+            }
+
+            const data = premiums[i]
             const [
                 baseCost64x64,
-                feeCost64x64,
-            ] = await this.linkPool.quote(
-                this.wallet.address,
-                o.maturity,
-                o.strike64x64,
-                utils.parseUnits(contractSize, this.linkDecimals),
-                o.optionType == 'CALL'
-            )
-            const premium = this.bn64x64ToBn(baseCost64x64).add(this.bn64x64ToBn(feeCost64x64))
+                feeCost64x64
+            ] = data
+            
+            const premium = this.bn64x64ToBn(BigNumber.from(baseCost64x64))
+                .add(this.bn64x64ToBn(BigNumber.from(feeCost64x64)))
 
             console.log(`Pair: ${o.pairName}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity*1000)}`)
             console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
             console.log(`Contract size: ${contractSize}`)
-            console.log(`Premium: ${this.formatBn(premium.mul(linkPrice), this.linkDecimals+this.oracleDecimals)}`)
+            console.log(`Premium: ${this.formatBn(premium.mul(price), this.linkDecimals+this.oracleDecimals)}`)
             console.log()
+
+            i++
         }
     }
 }
