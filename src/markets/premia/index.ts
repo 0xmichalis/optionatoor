@@ -105,13 +105,13 @@ class PremiaService {
 
             switch (o.pairName) {
                 case 'WBTC/DAI':
-                    contractSize = '0.05'
+                    contractSize = '0.01'
                     break
                 case 'WETH/DAI':
-                    contractSize = '1'
+                    contractSize = '0.1'
                     break
                 case 'LINK/DAI':
-                    contractSize = '200'
+                    contractSize = '10'
                     break
                 default:
                     throw Error(`unknown pair: ${o.pairName}`)
@@ -140,15 +140,15 @@ class PremiaService {
 
             switch (o.pairName) {
                 case 'WBTC/DAI':
-                    contractSize = '0.05'
+                    contractSize = '0.01'
                     price = wbtcPrice
                     break
                 case 'WETH/DAI':
-                    contractSize = '1'
+                    contractSize = '0.1'
                     price = wethPrice
                     break
                 case 'LINK/DAI':
-                    contractSize = '200'
+                    contractSize = '10'
                     price = linkPrice
                     break
                 default:
