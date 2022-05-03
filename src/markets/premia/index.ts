@@ -19,6 +19,7 @@ class PremiaService {
     private wbtcPool: Contract
     private wethPool: Contract
     private linkPool: Contract
+    private linkDecimals = 0
 
     constructor() {
         this.provider = new providers.StaticJsonRpcProvider(config.get('PREMIA_NODE_API_URL'))
@@ -29,11 +30,21 @@ class PremiaService {
         console.log(`Keeper address: ${this.wallet.address}`)
 
         const poolAbi = [
+            'function getPoolSettings() external view returns ((address underlying, address base, address underlyingOracle, address baseOracle))',
             'function quote(address feePayer, uint64 maturity, int128 strike64x64, uint256 contractSize, bool isCall) external view returns (int128 baseCost64x64, int128 feeCost64x64, int128 cLevel64x64, int128 slippageCoefficient64x64)',
         ]
         this.wbtcPool = new Contract(config.get('PREMIA_POOL_WBTC'), poolAbi, this.provider)
         this.wethPool = new Contract(config.get('PREMIA_POOL_WETH'), poolAbi, this.provider)
         this.linkPool = new Contract(config.get('PREMIA_POOL_LINK'), poolAbi, this.provider)
+    }
+
+    async init(): Promise<void> {
+        const erc20Abi = [
+            'function decimals() external view returns (uint8)',
+        ]
+        const [underlying,,underlyingOracle,] = await this.linkPool.getPoolSettings()
+        const link = new Contract(underlying, erc20Abi, this.provider)
+        this.linkDecimals = await link.decimals()
     }
 
     bn64x64ToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
@@ -55,7 +66,9 @@ class PremiaService {
     }
 
     async fetchPremiums(): Promise<any> {
+        const contractSize = '1000'
         const options = await this.fetchOptions()
+
         for (let o of options.data.options) {
             if (o.pairName != 'LINK/DAI')
                 continue
@@ -67,16 +80,16 @@ class PremiaService {
                 this.wallet.address,
                 o.maturity,
                 o.strike64x64,
-                BigNumber.from(utils.parseUnits('1000', defaultDecimals)),
+                utils.parseUnits(contractSize, this.linkDecimals),
                 o.optionType == 'CALL'
             )
             const premium = this.bn64x64ToBn(baseCost64x64).add(this.bn64x64ToBn(feeCost64x64))
 
-            console.log()
             console.log(`Pair: ${o.pairName}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity*1000)}`)
             console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
+            console.log(`Contract size: ${contractSize}`)
             console.log(`Premium: ${this.formatBn(premium)}`)
             console.log()
         }
