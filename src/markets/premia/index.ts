@@ -36,16 +36,16 @@ class PremiaService {
         this.linkPool = new Contract(config.get('PREMIA_POOL_LINK'), poolAbi, this.provider)
     }
 
-    fixedToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
+    bn64x64ToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
         return bn64x64.mul(BigNumber.from(10).pow(decimals)).shr(64);
     }
 
-    formatNum(num: BigNumber, decimals = defaultDecimals): string {
-        return utils.formatUnits(num, decimals);
+    formatBn(bn: BigNumber, decimals = defaultDecimals): string {
+        return utils.formatUnits(bn, decimals);
     }
 
-    format64x64(num: BigNumber): string {
-        return this.formatNum(this.fixedToBn(num));
+    format64x64(bn64x64: BigNumber): string {
+        return this.formatBn(this.bn64x64ToBn(bn64x64));
     }
 
     async fetchOptions(): Promise<any> {
@@ -57,6 +57,9 @@ class PremiaService {
     async fetchPremiums(): Promise<any> {
         const options = await this.fetchOptions()
         for (let o of options.data.options) {
+            if (o.pairName != 'LINK/DAI')
+                continue
+
             const [
                 baseCost64x64,
                 feeCost64x64,
@@ -67,14 +70,14 @@ class PremiaService {
                 BigNumber.from(utils.parseUnits('1000', defaultDecimals)),
                 o.optionType == 'CALL'
             )
-            const premium = this.fixedToBn(baseCost64x64).add(this.fixedToBn(feeCost64x64))
+            const premium = this.bn64x64ToBn(baseCost64x64).add(this.bn64x64ToBn(feeCost64x64))
 
             console.log()
             console.log(`Pair: ${o.pairName}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity*1000)}`)
             console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
-            console.log(`Premium: ${this.formatNum(premium)}`)
+            console.log(`Premium: ${this.formatBn(premium)}`)
             console.log()
         }
     }
