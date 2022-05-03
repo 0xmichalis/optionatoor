@@ -3,6 +3,7 @@ import Joi from 'joi'
 
 
 const schema: Joi.ObjectSchema = Joi.object({
+  ORACLE_LINK: Joi.string().required(),
   PREMIA_NODE_API_URL: Joi.string().uri().required(),
   PREMIA_POOL_WBTC: Joi.string().required(),
   PREMIA_POOL_WETH: Joi.string().required(),

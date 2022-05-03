@@ -13,7 +13,6 @@ export default class Optionatoor {
     }
 
     public async init(): Promise<void> {
-        await this.premia.init()
         this.isInitialized = true
     }
 

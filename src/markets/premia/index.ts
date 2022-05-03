@@ -19,7 +19,15 @@ class PremiaService {
     private wbtcPool: Contract
     private wethPool: Contract
     private linkPool: Contract
-    private linkDecimals = 0
+
+    // Oracles
+    // private wbtcOracle: Contract
+    // private wethOracle: Contract
+    private linkOracle: Contract
+
+    // Decimals
+    private oracleDecimals = 8
+    private linkDecimals = 18
 
     constructor() {
         this.provider = new providers.StaticJsonRpcProvider(config.get('PREMIA_NODE_API_URL'))
@@ -36,15 +44,13 @@ class PremiaService {
         this.wbtcPool = new Contract(config.get('PREMIA_POOL_WBTC'), poolAbi, this.provider)
         this.wethPool = new Contract(config.get('PREMIA_POOL_WETH'), poolAbi, this.provider)
         this.linkPool = new Contract(config.get('PREMIA_POOL_LINK'), poolAbi, this.provider)
-    }
 
-    async init(): Promise<void> {
-        const erc20Abi = [
-            'function decimals() external view returns (uint8)',
+        const oracleAbi = [
+            'function latestAnswer() external view returns (uint256)',
         ]
-        const [underlying,,underlyingOracle,] = await this.linkPool.getPoolSettings()
-        const link = new Contract(underlying, erc20Abi, this.provider)
-        this.linkDecimals = await link.decimals()
+        // this.wbtcOracle = new Contract(config.get('ORACLE_WBTC'), oracleAbi, this.provider)
+        // this.wethOracle = new Contract(config.get('ORACLE_WETH'), oracleAbi, this.provider)
+        this.linkOracle = new Contract(config.get('ORACLE_LINK'), oracleAbi, this.provider)
     }
 
     bn64x64ToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
@@ -69,6 +75,10 @@ class PremiaService {
         const contractSize = '1000'
         const options = await this.fetchOptions()
 
+        const linkPrice = await this.linkOracle.latestAnswer()
+        console.log(`LINK price: ${this.formatBn(linkPrice, this.oracleDecimals)}`)
+        console.log()
+
         for (let o of options.data.options) {
             if (o.pairName != 'LINK/DAI')
                 continue
@@ -90,7 +100,7 @@ class PremiaService {
             console.log(`Maturity: ${new Date(o.maturity*1000)}`)
             console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
             console.log(`Contract size: ${contractSize}`)
-            console.log(`Premium: ${this.formatBn(premium)}`)
+            console.log(`Premium: ${this.formatBn(premium.mul(linkPrice), this.linkDecimals+this.oracleDecimals)}`)
             console.log()
         }
     }
