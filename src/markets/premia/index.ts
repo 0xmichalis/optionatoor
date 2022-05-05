@@ -93,6 +93,7 @@ class PremiaService {
         console.log(`WBTC/USD: ${this.formatBn(wbtcPrice, this.oracleDecimals)}`)
         console.log(`WETH/USD: ${this.formatBn(wethPrice, this.oracleDecimals)}`)
         console.log(`LINK/USD: ${this.formatBn(linkPrice, this.oracleDecimals)}`)
+        console.log()
 
         const calls = []
         const options = await this.fetchOptions()
@@ -100,7 +101,6 @@ class PremiaService {
         for (let o of options.data.options) {
             if (o.pairName == 'YFI/DAI') continue
 
-            // Multiply by 1e8 to match the oracle decimals
             let contractSize: string
 
             switch (o.pairName) {
@@ -134,7 +134,6 @@ class PremiaService {
         for (let o of options.data.options) {
             if (o.pairName == 'YFI/DAI') continue
 
-            // Multiply by 1e8 to match the oracle decimals
             let contractSize: string
             let price = 0
 
@@ -160,16 +159,19 @@ class PremiaService {
                 baseCost64x64,
                 feeCost64x64
             ] = data
-            
-            const premium = this.bn64x64ToBn(BigNumber.from(baseCost64x64))
+
+            let premium = this.bn64x64ToBn(BigNumber.from(baseCost64x64))
                 .add(this.bn64x64ToBn(BigNumber.from(feeCost64x64)))
+            if (o.optionType == 'CALL') {
+                premium = premium.mul(price).div(1e8)
+            }
 
             console.log(`Pair: ${o.pairName}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity*1000)}`)
             console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
             console.log(`Contract size: ${contractSize}`)
-            console.log(`Premium: ${this.formatBn(premium.mul(price), this.linkDecimals+this.oracleDecimals)}`)
+            console.log(`Premium: ${this.formatBn(premium, this.linkDecimals)}`)
             console.log()
 
             i++
