@@ -151,7 +151,7 @@ class PremiaService {
             switch (o.pairName) {
                 case 'WBTC/DAI':
                     contractSize = '0.01'
-                    decimals = this.wbtcDecimals
+                    decimals = 18 // ???
                     price = wbtcPrice
                     break
                 case 'WETH/DAI':
