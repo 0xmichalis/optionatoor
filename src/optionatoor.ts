@@ -1,3 +1,5 @@
+import { utils } from 'ethers'
+
 import { config } from './config'
 import PremiaService from './markets/premia'
 
@@ -11,7 +13,6 @@ export default class Optionatoor {
     private premia: PremiaService
 
     constructor() {
-        this.maxBuyUSD = Number(config.get('MAX_BUY_USD'))
         this.premia = new PremiaService()
     }
 
@@ -23,14 +24,14 @@ export default class Optionatoor {
     public async run(): Promise<void> {
         if (!this.isInitialized) throw Error('uninitialized: did you run init()?')
 
-        const premiaOptions = await this.premia.fetchPremiums(this.maxBuyUSD)
+        const premiaOptions = await this.premia.getOptions()
         for (let o of premiaOptions) {
             console.log(`Pair: ${o.pairName}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity)}`)
-            console.log(`Strike: ${this.premia.formatBn(o.strike)}`)
+            console.log(`Strike: ${utils.formatUnits(o.strike)}`)
             console.log(`Contract size: ${o.contractSize}`)
-            console.log(`Premium: ${this.premia.formatBn(o.premium)}`)
+            console.log(`Premium: ${utils.formatUnits(o.premium)}`)
             console.log()
         }
     }

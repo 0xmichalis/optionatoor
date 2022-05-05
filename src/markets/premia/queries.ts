@@ -1,4 +1,4 @@
-export const fetchOptionsQuery = (now: number) => `
+export const getOptionsQuery = (now: number) => `
 {
   options(first: 100, where: {maturity_gt: ${now}}) {
     id

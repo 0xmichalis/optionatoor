@@ -1,9 +1,9 @@
-import { BigNumber, Contract, ethers, providers, utils, Wallet } from 'ethers'
+import { BigNumber, ethers, providers, utils, Wallet } from 'ethers'
 import { Contract as MulticallContract, Provider as MulticallProvider } from 'ethers-multicall'
 
 import ApiService from '../../services/api'
 import { config } from '../../config'
-import { fetchOptionsQuery } from './queries'
+import { getOptionsQuery } from './queries'
 import { IOption } from '../../types/option'
 
 const defaultDecimals = 18;
@@ -15,6 +15,7 @@ class PremiaService {
     private subgraphURL: string
 
     private wallet: Wallet
+    private maxBuyUSD: number
 
     // Pools
     private wbtcPool: MulticallContract
@@ -39,6 +40,8 @@ class PremiaService {
 
         this.wallet = new ethers.Wallet(config.get('PRIVATE_KEY'), this.provider)
         console.log(`Keeper address: ${this.wallet.address}`)
+        console.log()
+        this.maxBuyUSD = Number(config.get('MAX_BUY_USD'))
 
         const poolAbi = [
             'function getPoolSettings() external view returns ((address underlying, address base, address underlyingOracle, address baseOracle))',
@@ -60,25 +63,17 @@ class PremiaService {
         await this.multicallProvider.init()
     }
 
-    bn64x64ToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
+    private bn64x64ToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
         return bn64x64.mul(BigNumber.from(10).pow(decimals)).shr(64);
     }
 
-    formatBn(bn: BigNumber, decimals = defaultDecimals): string {
-        return utils.formatUnits(bn, decimals);
-    }
-
-    format64x64(bn64x64: BigNumber): string {
-        return this.formatBn(this.bn64x64ToBn(bn64x64));
-    }
-
-    async fetchOptions(): Promise<any> {
+    private async getOptionsFromSubgraph(): Promise<any> {
         const now = Math.floor(Date.now() / 1000)
-        const resp =  await ApiService.graphql(this.subgraphURL, fetchOptionsQuery(now))
+        const resp =  await ApiService.graphql(this.subgraphURL, getOptionsQuery(now))
         return resp.data
     }
 
-    async fetchPremiums(maxBuyUSD: number): Promise<any[]> {
+    async getOptions(): Promise<IOption[]> {
         // Fetch oracle prices first to estimate max
         // contract size per asset.
         const oracleCalls = [
@@ -93,13 +88,13 @@ class PremiaService {
             linkPrice,
         ] = await this.multicallProvider.all(oracleCalls)
 
-        console.log(`WBTC/USD: ${this.formatBn(wbtcPrice, this.oracleDecimals)}`)
-        console.log(`WETH/USD: ${this.formatBn(wethPrice, this.oracleDecimals)}`)
-        console.log(`LINK/USD: ${this.formatBn(linkPrice, this.oracleDecimals)}`)
+        console.log(`WBTC/USD: ${utils.formatUnits(wbtcPrice, this.oracleDecimals)}`)
+        console.log(`WETH/USD: ${utils.formatUnits(wethPrice, this.oracleDecimals)}`)
+        console.log(`LINK/USD: ${utils.formatUnits(linkPrice, this.oracleDecimals)}`)
         console.log()
 
         const calls = []
-        const opts = await this.fetchOptions()
+        const opts = await this.getOptionsFromSubgraph()
     
         for (let o of opts.data.options) {
             if (o.pairName == 'YFI/DAI') continue
