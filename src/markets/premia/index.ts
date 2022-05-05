@@ -103,6 +103,7 @@ class PremiaService {
         for (let o of options.data.options) {
             if (o.pairName == 'YFI/DAI') continue
 
+            let pool: MulticallContract
             let contractSize: string
             let decimals: number
 
@@ -110,21 +111,24 @@ class PremiaService {
                 case 'WBTC/DAI':
                     contractSize = '0.01'
                     decimals = this.wbtcDecimals
+                    pool = this.wbtcPool
                     break
                 case 'WETH/DAI':
                     contractSize = '0.1'
                     decimals = this.wethDecimals
+                    pool = this.wethPool
                     break
                 case 'LINK/DAI':
                     contractSize = '10'
                     decimals = this.linkDecimals
+                    pool = this.linkPool
                     break
                 default:
                     throw Error(`unknown pair: ${o.pairName}`)
             }
  
             calls.push(
-                this.linkPool.quote(
+                pool.quote(
                     this.wallet.address,
                     o.maturity,
                     o.strike64x64,
