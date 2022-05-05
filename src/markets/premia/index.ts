@@ -4,6 +4,7 @@ import { Contract as MulticallContract, Provider as MulticallProvider } from 'et
 import ApiService from '../../services/api'
 import { config } from '../../config'
 import { fetchOptionsQuery } from './queries'
+import { IOption } from '../../types/option'
 
 const defaultDecimals = 18;
 
@@ -77,7 +78,7 @@ class PremiaService {
         return resp.data
     }
 
-    async fetchPremiums(maxBuyUSD: number): Promise<any> {
+    async fetchPremiums(maxBuyUSD: number): Promise<any[]> {
         // Fetch oracle prices first to estimate max
         // contract size per asset.
         const oracleCalls = [
@@ -98,9 +99,9 @@ class PremiaService {
         console.log()
 
         const calls = []
-        const options = await this.fetchOptions()
+        const opts = await this.fetchOptions()
     
-        for (let o of options.data.options) {
+        for (let o of opts.data.options) {
             if (o.pairName == 'YFI/DAI') continue
 
             let pool: MulticallContract
@@ -141,7 +142,8 @@ class PremiaService {
         const premiums = await this.multicallProvider.all(calls)
 
         let i = 0
-        for (let o of options.data.options) {
+        const options: IOption[] = []
+        for (let o of opts.data.options) {
             if (o.pairName == 'YFI/DAI') continue
 
             let contractSize: string
@@ -172,23 +174,27 @@ class PremiaService {
 
             let premium = this.bn64x64ToBn(BigNumber.from(baseCost64x64))
                 .add(this.bn64x64ToBn(BigNumber.from(feeCost64x64)))
+
+            // Put quotes are returned in DAI so no need to convert to USD
+            // in that case. Call quotes are denominated in the underlying asset
+            // so convert to USD here.
             if (o.optionType == 'CALL') {
-                // Put quotes are returned in DAI so no need to convert to USD
-                // in that case. Call quotes are denominated in the underlying asset
-                // so convert to USD here.
                 premium = premium.mul(price).div(1e8)
             }
 
-            console.log(`Pair: ${o.pairName}`)
-            console.log(`Type: ${o.optionType}`)
-            console.log(`Maturity: ${new Date(o.maturity*1000)}`)
-            console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
-            console.log(`Contract size: ${contractSize}`)
-            console.log(`Premium: ${this.formatBn(premium)}`)
-            console.log()
+            options.push({
+                optionType: o.optionType,
+                pairName: o.pairName,
+                maturity: o.maturity*1000,
+                strike: this.bn64x64ToBn(BigNumber.from(o.strike64x64)),
+                contractSize,
+                premium,
+            })
 
             i++
         }
+
+        return options
     }
 }
 

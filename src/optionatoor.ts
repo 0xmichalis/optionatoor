@@ -23,6 +23,15 @@ export default class Optionatoor {
     public async run(): Promise<void> {
         if (!this.isInitialized) throw Error('uninitialized: did you run init()?')
 
-        await this.premia.fetchPremiums(this.maxBuyUSD)
+        const premiaOptions = await this.premia.fetchPremiums(this.maxBuyUSD)
+        for (let o of premiaOptions) {
+            console.log(`Pair: ${o.pairName}`)
+            console.log(`Type: ${o.optionType}`)
+            console.log(`Maturity: ${new Date(o.maturity)}`)
+            console.log(`Strike: ${this.premia.formatBn(o.strike)}`)
+            console.log(`Contract size: ${o.contractSize}`)
+            console.log(`Premium: ${this.premia.formatBn(o.premium)}`)
+            console.log()
+        }
     }
 }
