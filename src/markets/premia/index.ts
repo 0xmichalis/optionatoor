@@ -177,6 +177,9 @@ class PremiaService {
             let premium = this.bn64x64ToBn(BigNumber.from(baseCost64x64))
                 .add(this.bn64x64ToBn(BigNumber.from(feeCost64x64)))
             if (o.optionType == 'CALL') {
+                // Put quotes are returned in DAI so no need to convert to USD
+                // in that case. Call quotes are denominated in the underlying asset
+                // so convert to USD here.
                 premium = premium.mul(price).div(1e8)
             }
 
