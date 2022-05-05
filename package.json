@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@ethersproject/bignumber": "^5.5.0",
+    "@lyrafinance/lyra-js": "^0.0.11",
     "axios": "^0.26.1",
     "dotenv": "^10.0.0",
     "ethers-multicall": "^0.2.1",
