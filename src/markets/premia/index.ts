@@ -27,6 +27,8 @@ class PremiaService {
 
     // Decimals
     private oracleDecimals = 8
+    private wbtcDecimals = 8
+    private wethDecimals = 18
     private linkDecimals = 18
 
     constructor() {
@@ -102,16 +104,20 @@ class PremiaService {
             if (o.pairName == 'YFI/DAI') continue
 
             let contractSize: string
+            let decimals: number
 
             switch (o.pairName) {
                 case 'WBTC/DAI':
                     contractSize = '0.01'
+                    decimals = this.wbtcDecimals
                     break
                 case 'WETH/DAI':
                     contractSize = '0.1'
+                    decimals = this.wethDecimals
                     break
                 case 'LINK/DAI':
                     contractSize = '10'
+                    decimals = this.linkDecimals
                     break
                 default:
                     throw Error(`unknown pair: ${o.pairName}`)
@@ -122,7 +128,7 @@ class PremiaService {
                     this.wallet.address,
                     o.maturity,
                     o.strike64x64,
-                    utils.parseUnits(contractSize, this.linkDecimals),
+                    utils.parseUnits(contractSize, decimals),
                     o.optionType == 'CALL'
                 )
             )
@@ -135,19 +141,23 @@ class PremiaService {
             if (o.pairName == 'YFI/DAI') continue
 
             let contractSize: string
-            let price = 0
+            let decimals: number
+            let price: number
 
             switch (o.pairName) {
                 case 'WBTC/DAI':
                     contractSize = '0.01'
+                    decimals = this.wbtcDecimals
                     price = wbtcPrice
                     break
                 case 'WETH/DAI':
                     contractSize = '0.1'
+                    decimals = this.wethDecimals
                     price = wethPrice
                     break
                 case 'LINK/DAI':
                     contractSize = '10'
+                    decimals = this.linkDecimals
                     price = linkPrice
                     break
                 default:
@@ -171,7 +181,7 @@ class PremiaService {
             console.log(`Maturity: ${new Date(o.maturity*1000)}`)
             console.log(`Strike: ${this.format64x64(BigNumber.from(o.strike64x64))}`)
             console.log(`Contract size: ${contractSize}`)
-            console.log(`Premium: ${this.formatBn(premium, this.linkDecimals)}`)
+            console.log(`Premium: ${this.formatBn(premium, decimals)}`)
             console.log()
 
             i++
