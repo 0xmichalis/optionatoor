@@ -16,6 +16,7 @@ class PremiaService {
 
     private wallet: Wallet
     private maxBuyUSD: number
+    private ignoredPairs = [ 'YFI/DAI' ]
 
     // Pools
     private wbtcPool: MulticallContract
@@ -97,7 +98,7 @@ class PremiaService {
         const opts = await this.getOptionsFromSubgraph()
     
         for (let o of opts.data.options) {
-            if (o.pairName == 'YFI/DAI') continue
+            if (this.ignoredPairs.includes(o.pairName)) continue
 
             let pool: MulticallContract
             let contractSize: string
@@ -139,7 +140,7 @@ class PremiaService {
         let i = 0
         const options: IOption[] = []
         for (let o of opts.data.options) {
-            if (o.pairName == 'YFI/DAI') continue
+            if (this.ignoredPairs.includes(o.pairName)) continue
 
             let contractSize: string
             let price: number
