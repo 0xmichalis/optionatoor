@@ -89,10 +89,11 @@ class PremiaService {
             linkPrice,
         ] = await this.multicallProvider.all(oracleCalls)
 
-        console.log(`WBTC/USD: ${utils.formatUnits(wbtcPrice, this.oracleDecimals)}`)
-        console.log(`WETH/USD: ${utils.formatUnits(wethPrice, this.oracleDecimals)}`)
-        console.log(`LINK/USD: ${utils.formatUnits(linkPrice, this.oracleDecimals)}`)
-        console.log()
+        // Re-enable when using a logger that supports log levels and move to debug
+        // console.log(`WBTC/USD: ${utils.formatUnits(wbtcPrice, this.oracleDecimals)}`)
+        // console.log(`WETH/USD: ${utils.formatUnits(wethPrice, this.oracleDecimals)}`)
+        // console.log(`LINK/USD: ${utils.formatUnits(linkPrice, this.oracleDecimals)}`)
+        // console.log()
 
         const calls = []
         const opts = await this.getOptionsFromSubgraph()

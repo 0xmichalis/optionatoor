@@ -2,6 +2,7 @@ import { utils } from 'ethers'
 
 import LyraService from './markets/lyra'
 import PremiaService from './markets/premia'
+import { oKey } from './types/option'
 
 export default class Optionatoor {
     // Whether the class is initialized
@@ -27,10 +28,7 @@ export default class Optionatoor {
         console.log('\x1b[1mGetting Lyra bids...\x1b[0m')
         const lyraSellOptions = await this.lyra.getOptions()
         for (let o of lyraSellOptions) {
-            console.log(`Asset: ${o.asset}`)
-            console.log(`Type: ${o.optionType}`)
-            console.log(`Maturity: ${new Date(o.maturity)}`)
-            console.log(`Strike: ${utils.formatUnits(o.strike)}`)
+            console.log(`Asset: ${oKey(o)}`)
             console.log(`Contract size: ${o.contractSize}`)
             console.log(`Premium: ${utils.formatUnits(o.premium)}`)
             console.log()
@@ -39,10 +37,7 @@ export default class Optionatoor {
         console.log('\x1b[1mGetting Lyra asks...\x1b[0m')
         const lyraBuyOptions = await this.lyra.getOptions(true)
         for (let o of lyraBuyOptions) {
-            console.log(`Asset: ${o.asset}`)
-            console.log(`Type: ${o.optionType}`)
-            console.log(`Maturity: ${new Date(o.maturity)}`)
-            console.log(`Strike: ${utils.formatUnits(o.strike)}`)
+            console.log(`Asset: ${oKey(o)}`)
             console.log(`Contract size: ${o.contractSize}`)
             console.log(`Premium: ${utils.formatUnits(o.premium)}`)
             console.log()
@@ -51,10 +46,7 @@ export default class Optionatoor {
         console.log('\x1b[1mGetting Premia asks...\x1b[0m')
         const premiaOptions = await this.premia.getOptions()
         for (let o of premiaOptions) {
-            console.log(`Asset: ${o.asset}`)
-            console.log(`Type: ${o.optionType}`)
-            console.log(`Maturity: ${new Date(o.maturity)}`)
-            console.log(`Strike: ${utils.formatUnits(o.strike)}`)
+            console.log(`Asset: ${oKey(o)}`)
             console.log(`Contract size: ${o.contractSize}`)
             console.log(`Premium: ${utils.formatUnits(o.premium)}`)
             console.log()
