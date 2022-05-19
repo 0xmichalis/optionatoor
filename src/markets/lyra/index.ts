@@ -39,7 +39,7 @@ class LyraService {
                     if (this.fromBigNumber(call.premium) != 0) {
                         options.push({
                             optionType: 'CALL',
-                            pairName: market.name,
+                            asset: market.name,
                             maturity: board.expiryTimestamp*1000,
                             strike: strike.strikePrice,
                             contractSize: utils.formatUnits(call.size),
@@ -51,7 +51,7 @@ class LyraService {
                     if (this.fromBigNumber(put.premium) != 0) {
                         options.push({
                             optionType: 'PUT',
-                            pairName: market.name,
+                            asset: market.name,
                             maturity: board.expiryTimestamp*1000,
                             strike: strike.strikePrice,
                             contractSize: utils.formatUnits(put.size),

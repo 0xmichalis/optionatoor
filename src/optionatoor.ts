@@ -27,7 +27,7 @@ export default class Optionatoor {
         console.log('\x1b[1mGetting Lyra bids...\x1b[0m')
         const lyraSellOptions = await this.lyra.getOptions()
         for (let o of lyraSellOptions) {
-            console.log(`Asset: ${o.pairName}`)
+            console.log(`Asset: ${o.asset}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity)}`)
             console.log(`Strike: ${utils.formatUnits(o.strike)}`)
@@ -39,7 +39,7 @@ export default class Optionatoor {
         console.log('\x1b[1mGetting Lyra asks...\x1b[0m')
         const lyraBuyOptions = await this.lyra.getOptions(true)
         for (let o of lyraBuyOptions) {
-            console.log(`Asset: ${o.pairName}`)
+            console.log(`Asset: ${o.asset}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity)}`)
             console.log(`Strike: ${utils.formatUnits(o.strike)}`)
@@ -51,7 +51,7 @@ export default class Optionatoor {
         console.log('\x1b[1mGetting Premia asks...\x1b[0m')
         const premiaOptions = await this.premia.getOptions()
         for (let o of premiaOptions) {
-            console.log(`Pair: ${o.pairName}`)
+            console.log(`Asset: ${o.asset}`)
             console.log(`Type: ${o.optionType}`)
             console.log(`Maturity: ${new Date(o.maturity)}`)
             console.log(`Strike: ${utils.formatUnits(o.strike)}`)
@@ -59,5 +59,9 @@ export default class Optionatoor {
             console.log(`Premium: ${utils.formatUnits(o.premium)}`)
             console.log()
         }
+
+        // TODO: Group asks and bids
+        // Filter higher bids and lower asks
+        // Buy most profitable spreads
     }
 }

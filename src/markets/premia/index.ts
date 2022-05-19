@@ -142,19 +142,23 @@ class PremiaService {
         for (let o of opts.data.options) {
             if (this.ignoredPairs.includes(o.pairName)) continue
 
+            let asset: string
             let contractSize: string
             let price: number
 
             switch (o.pairName) {
                 case 'WBTC/DAI':
+                    asset = 'BTC'
                     contractSize = '0.01'
                     price = wbtcPrice
                     break
                 case 'WETH/DAI':
+                    asset = 'ETH'
                     contractSize = '0.1'
                     price = wethPrice
                     break
                 case 'LINK/DAI':
+                    asset = 'LINK'
                     contractSize = '10'
                     price = linkPrice
                     break
@@ -180,7 +184,7 @@ class PremiaService {
 
             options.push({
                 optionType: o.optionType,
-                pairName: o.pairName,
+                asset,
                 maturity: o.maturity*1000,
                 strike: this.bn64x64ToBn(BigNumber.from(o.strike64x64)),
                 contractSize,

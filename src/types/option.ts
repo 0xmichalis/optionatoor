@@ -2,7 +2,7 @@ import { BigNumber } from "@ethersproject/bignumber";
 
 export interface IOption {
     optionType: 'CALL' | 'PUT';
-    pairName: string;
+    asset: string;
     // Unix timestamp of maturity
     maturity: number
     // Strike in USD
