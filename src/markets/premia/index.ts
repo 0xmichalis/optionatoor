@@ -15,7 +15,7 @@ class PremiaService {
     private subgraphURL: string
 
     private wallet: Wallet
-    private ignoredPairs = [ 'YFI/DAI' ]
+    private ignoredPairs = [ 'YFI/DAI', 'LINK/DAI' ]
 
     // Contract sizes
     private wbtcContractSize: string

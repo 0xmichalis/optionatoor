@@ -63,6 +63,7 @@ export default class Optionatoor {
                 arbFound = true
                 console.log(`\x1b[1mArbitrage opportunity found!\x1b[0m`)
                 console.log(`Asset: ${key}`)
+                console.log(`Contract size: ${sell.contractSize}`)
                 console.log(`Sell in ${sell.market}: ${utils.formatUnits(sell.premium)}`)
                 console.log(`Buy in ${buy.market}: ${utils.formatUnits(buy.premium)}`)
                 console.log()
