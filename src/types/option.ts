@@ -15,8 +15,9 @@ export interface IOption {
 }
 
 export const oKey = (o: IOption): string => {
+    const m = new Date(o.maturity)
     return o.optionType + '-' 
         + o.asset + '-' + 
         utils.formatUnits(o.strike).replace('.0', '') + '-' 
-        + new Date(o.maturity).toDateString()
+        + `${m.getDate()}-${m.getMonth()+1}-${m.getFullYear()}`
 }
