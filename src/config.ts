@@ -3,11 +3,10 @@ import Joi from 'joi'
 
 
 const schema: Joi.ObjectSchema = Joi.object({
-  MAX_BUY_USD: Joi.number().required(),
+  ARBITRUM_NODE_API_URL: Joi.string().uri().required(),
   ORACLE_WBTC: Joi.string().required(),
   ORACLE_WETH: Joi.string().required(),
   ORACLE_LINK: Joi.string().required(),
-  PREMIA_NODE_API_URL: Joi.string().uri().required(),
   PREMIA_POOL_WBTC: Joi.string().required(),
   PREMIA_POOL_WETH: Joi.string().required(),
   PREMIA_POOL_LINK: Joi.string().required(),

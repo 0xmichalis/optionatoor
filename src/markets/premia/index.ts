@@ -15,7 +15,6 @@ class PremiaService {
     private subgraphURL: string
 
     private wallet: Wallet
-    private maxBuyUSD: number
     private ignoredPairs = [ 'YFI/DAI' ]
 
     // Pools
@@ -29,20 +28,17 @@ class PremiaService {
     private linkOracle: MulticallContract
 
     // Decimals
-    private oracleDecimals = 8
     private wbtcDecimals = 8
     private wethDecimals = 18
     private linkDecimals = 18
 
     constructor() {
-        this.provider = new providers.StaticJsonRpcProvider(config.get('PREMIA_NODE_API_URL'))
+        this.provider = new providers.StaticJsonRpcProvider(config.get('ARBITRUM_NODE_API_URL'))
         this.multicallProvider = new MulticallProvider(this.provider)
         this.subgraphURL = config.get('PREMIA_SUBGRAPH_API_URL')
 
         this.wallet = new ethers.Wallet(config.get('PRIVATE_KEY'), this.provider)
-        console.log(`Keeper address: ${this.wallet.address}`)
-        console.log()
-        this.maxBuyUSD = Number(config.get('MAX_BUY_USD'))
+        console.log(`Wallet address: ${this.wallet.address}`)
 
         const poolAbi = [
             'function getPoolSettings() external view returns ((address underlying, address base, address underlyingOracle, address baseOracle))',
@@ -70,13 +66,13 @@ class PremiaService {
 
     private async getOptionsFromSubgraph(): Promise<any> {
         const now = Math.floor(Date.now() / 1000)
-        const resp =  await ApiService.graphql(this.subgraphURL, getOptionsQuery(now))
+        const resp = await ApiService.graphql(this.subgraphURL, getOptionsQuery(now))
         return resp.data
     }
 
     async getOptions(): Promise<IOption[]> {
-        // Fetch oracle prices first to estimate max
-        // contract size per asset.
+        // Fetch oracle prices to estimate premium size in USD
+        // for calls as they are denominated in the underlying.
         const oracleCalls = [
             this.wbtcOracle.latestAnswer(),
             this.wethOracle.latestAnswer(),
@@ -89,15 +85,9 @@ class PremiaService {
             linkPrice,
         ] = await this.multicallProvider.all(oracleCalls)
 
-        // Re-enable when using a logger that supports log levels and move to debug
-        // console.log(`WBTC/USD: ${utils.formatUnits(wbtcPrice, this.oracleDecimals)}`)
-        // console.log(`WETH/USD: ${utils.formatUnits(wethPrice, this.oracleDecimals)}`)
-        // console.log(`LINK/USD: ${utils.formatUnits(linkPrice, this.oracleDecimals)}`)
-        // console.log()
-
-        const calls = []
+        const requests = []
         const opts = await this.getOptionsFromSubgraph()
-    
+
         for (let o of opts.data.options) {
             if (this.ignoredPairs.includes(o.pairName)) continue
 
@@ -125,7 +115,7 @@ class PremiaService {
                     throw Error(`unknown pair: ${o.pairName}`)
             }
  
-            calls.push(
+            requests.push(
                 pool.quote(
                     this.wallet.address,
                     o.maturity,
@@ -136,7 +126,7 @@ class PremiaService {
             )
         }
 
-        const premiums = await this.multicallProvider.all(calls)
+        const premiums = await this.multicallProvider.all(requests)
 
         let i = 0
         const options: IOption[] = []
