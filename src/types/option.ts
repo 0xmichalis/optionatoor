@@ -2,8 +2,9 @@ import { utils } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber';
 
 export interface IOption {
-    optionType: 'CALL' | 'PUT';
-    asset: string;
+    market: 'Premia' | 'Lyra'
+    optionType: 'CALL' | 'PUT'
+    asset: string
     // Unix timestamp of maturity
     maturity: number
     // Strike in USD

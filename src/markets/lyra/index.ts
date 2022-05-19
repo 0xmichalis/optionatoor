@@ -38,6 +38,7 @@ class LyraService {
                     const call = await strike.quote(true, isBuy, contractSize)
                     if (this.fromBigNumber(call.premium) != 0) {
                         options.push({
+                            market: 'Lyra',
                             optionType: 'CALL',
                             asset: market.name,
                             maturity: board.expiryTimestamp*1000,
@@ -50,6 +51,7 @@ class LyraService {
                     const put = await strike.quote(false, isBuy, contractSize)
                     if (this.fromBigNumber(put.premium) != 0) {
                         options.push({
+                            market: 'Lyra',
                             optionType: 'PUT',
                             asset: market.name,
                             maturity: board.expiryTimestamp*1000,

@@ -184,6 +184,7 @@ class PremiaService {
             }
 
             options.push({
+                market: 'Premia',
                 optionType: o.optionType,
                 asset,
                 maturity: o.maturity*1000,
