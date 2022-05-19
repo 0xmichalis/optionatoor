@@ -40,6 +40,7 @@ class LyraService {
                         options.push({
                             market: 'Lyra',
                             optionType: 'CALL',
+                            isBuy,
                             asset: market.name,
                             maturity: board.expiryTimestamp*1000,
                             strike: strike.strikePrice,
@@ -53,6 +54,7 @@ class LyraService {
                         options.push({
                             market: 'Lyra',
                             optionType: 'PUT',
+                            isBuy,
                             asset: market.name,
                             maturity: board.expiryTimestamp*1000,
                             strike: strike.strikePrice,

@@ -4,6 +4,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 export interface IOption {
     market: 'Premia' | 'Lyra'
     optionType: 'CALL' | 'PUT'
+    isBuy: boolean
     asset: string
     // Unix timestamp of maturity
     maturity: number

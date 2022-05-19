@@ -28,42 +28,43 @@ export default class Optionatoor {
         const buys = new Map<string, IOption>();
         const sells = new Map<string, IOption>();
 
+        // Get sells first
+
         console.log('\x1b[1mGetting Lyra sells...\x1b[0m')
         const lyraSellOptions = await this.lyra.getOptions()
         for (let o of lyraSellOptions) {
             this.potentiallySet(o, sells, false)
         }
 
+        // While getting buys, match immediately with a sell.
+        // If no sell exists, no point in keeping the buy around.
+
         console.log('\x1b[1mGetting Lyra buys...\x1b[0m')
         const lyraBuyOptions = await this.lyra.getOptions(true)
         for (let o of lyraBuyOptions) {
+            if (!sells.has(oKey(o))) continue
             this.potentiallySet(o, buys, true)
         }
 
         console.log('\x1b[1mGetting Premia buys...\x1b[0m')
         const premiaOptions = await this.premia.getOptions()
         for (let o of premiaOptions) {
+            if (!sells.has(oKey(o))) continue
             this.potentiallySet(o, buys, true)
         }
 
-        console.log()
-        console.log('\x1b[1mBEST SELLS\x1b[0m')
-        console.log()
-        for (const [key, o] of sells.entries()) {
-            console.log(`Asset: ${key}`)
-            console.log(`Market: ${o.market}`)
-            console.log(`Premium: ${utils.formatUnits(o.premium)}`)
-            console.log()
-        }
+        // Look for arbitrage opportunities in the spreads
+        for (const [key, sell] of sells.entries()) {
+            const buy = buys.get(key)
+            if (!buy) throw new Error('this is not fair')
 
-        console.log()
-        console.log('\x1b[1mBEST BUYS\x1b[0m')
-        console.log()
-        for (const [key, o] of buys.entries()) {
-            console.log(`Asset: ${key}`)
-            console.log(`Market: ${o.market}`)
-            console.log(`Premium: ${utils.formatUnits(o.premium)}`)
-            console.log()
+            if (sell.premium.gt(buy.premium)) {
+                console.log(`\x1b[1mArbitrage opportunity found!\x1b[0m`)
+                console.log(`Asset: ${key}`)
+                console.log(`Sell in ${sell.market}: ${utils.formatUnits(sell.premium)}`)
+                console.log(`Buy in ${buy.market}: ${utils.formatUnits(buy.premium)}`)
+                console.log()
+            }
         }
     }
 
@@ -77,9 +78,6 @@ export default class Optionatoor {
             // For sells, we want the higher premium, for buys we
             // want the lower premium.
             if ((isBuy && o.premium.lt(existing.premium)) || (!isBuy && o.premium.gt(existing.premium))) {
-                console.log(`Found better ${isBuy ? 'buy' : 'sell'} for ${key} in ${o.market}`)
-                console.log(`${o.market}: ${utils.formatUnits(o.premium)}`)
-                console.log(`${existing.market}: ${utils.formatUnits(existing.premium)}`)
                 map.set(key, o)
             }
         }

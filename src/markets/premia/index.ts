@@ -186,6 +186,7 @@ class PremiaService {
             options.push({
                 market: 'Premia',
                 optionType: o.optionType,
+                isBuy: true,
                 asset,
                 maturity: o.maturity*1000,
                 strike: this.bn64x64ToBn(BigNumber.from(o.strike64x64)),
