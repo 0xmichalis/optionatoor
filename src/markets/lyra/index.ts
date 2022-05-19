@@ -7,10 +7,6 @@ class LyraService {
     private lyra: Lyra
 
     constructor() {
-        // const config = {
-        //     rpcUrl: 'https://mainnet.optimism.io/',
-        //     chainId: 420
-        // }
         this.lyra = new Lyra()
     }
 
