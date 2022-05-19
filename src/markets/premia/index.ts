@@ -17,6 +17,11 @@ class PremiaService {
     private wallet: Wallet
     private ignoredPairs = [ 'YFI/DAI' ]
 
+    // Contract sizes
+    private wbtcContractSize: string
+    private wethContractSize: string
+    private linkContractSize: string
+
     // Pools
     private wbtcPool: MulticallContract
     private wethPool: MulticallContract
@@ -39,6 +44,10 @@ class PremiaService {
 
         this.wallet = new ethers.Wallet(config.get('PRIVATE_KEY'), this.provider)
         console.log(`Wallet address: ${this.wallet.address}`)
+
+        this.wbtcContractSize = config.get('CONTRACT_SIZE_BTC')
+        this.wethContractSize = config.get('CONTRACT_SIZE_ETH')
+        this.linkContractSize = config.get('CONTRACT_SIZE_LINK')
 
         const poolAbi = [
             'function getPoolSettings() external view returns ((address underlying, address base, address underlyingOracle, address baseOracle))',
@@ -97,17 +106,17 @@ class PremiaService {
 
             switch (o.pairName) {
                 case 'WBTC/DAI':
-                    contractSize = '0.01'
+                    contractSize = this.wbtcContractSize
                     decimals = this.wbtcDecimals
                     pool = this.wbtcPool
                     break
                 case 'WETH/DAI':
-                    contractSize = '0.1'
+                    contractSize = this.wethContractSize
                     decimals = this.wethDecimals
                     pool = this.wethPool
                     break
                 case 'LINK/DAI':
-                    contractSize = '10'
+                    contractSize = this.linkContractSize
                     decimals = this.linkDecimals
                     pool = this.linkPool
                     break
@@ -140,17 +149,17 @@ class PremiaService {
             switch (o.pairName) {
                 case 'WBTC/DAI':
                     asset = 'BTC'
-                    contractSize = '0.01'
+                    contractSize = this.wbtcContractSize
                     price = wbtcPrice
                     break
                 case 'WETH/DAI':
                     asset = 'ETH'
-                    contractSize = '0.1'
+                    contractSize = this.wethContractSize
                     price = wethPrice
                     break
                 case 'LINK/DAI':
                     asset = 'LINK'
-                    contractSize = '10'
+                    contractSize = this.linkContractSize
                     price = linkPrice
                     break
                 default:

@@ -4,6 +4,9 @@ import Joi from 'joi'
 
 const schema: Joi.ObjectSchema = Joi.object({
   ARBITRUM_NODE_API_URL: Joi.string().uri().required(),
+  CONTRACT_SIZE_BTC: Joi.string().required(),
+  CONTRACT_SIZE_ETH: Joi.string().required(),
+  CONTRACT_SIZE_LINK: Joi.string().required(),
   ORACLE_WBTC: Joi.string().required(),
   ORACLE_WETH: Joi.string().required(),
   ORACLE_LINK: Joi.string().required(),

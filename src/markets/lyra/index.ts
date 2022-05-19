@@ -1,13 +1,21 @@
 import Lyra from '@lyrafinance/lyra-js'
 import { BigNumber, utils } from 'ethers'
 
+import { config } from '../../config'
 import { IOption } from '../../types/option'
 
 class LyraService {
     private lyra: Lyra
 
+    // Contract sizes
+    private btcContractSize: string
+    private ethContractSize: string
+
     constructor() {
         this.lyra = new Lyra()
+
+        this.btcContractSize = config.get('CONTRACT_SIZE_BTC')
+        this.ethContractSize = config.get('CONTRACT_SIZE_ETH')
     }
 
     fromBigNumber(number: BigNumber, decimals: number = 18): number {
@@ -24,10 +32,10 @@ class LyraService {
             let contractSize: BigNumber
             switch (market.name) {
                 case 'BTC':
-                    contractSize = utils.parseUnits('0.01')
+                    contractSize = utils.parseUnits(this.btcContractSize)
                     break
                 case 'ETH':
-                    contractSize = utils.parseUnits('0.1')
+                    contractSize = utils.parseUnits(this.ethContractSize)
                     break
                 default:
                     throw new Error(`unknown market: ${market.name}`)
