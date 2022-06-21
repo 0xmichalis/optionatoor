@@ -74,8 +74,8 @@ class PremiaService {
     }
 
     private async getOptionsFromSubgraph(): Promise<any> {
-        const now = Math.floor(Date.now() / 1000)
-        const resp = await ApiService.graphql(this.subgraphURL, getOptionsQuery(now))
+        const tomorrow = Math.floor(Date.now() / 1000) + 86400
+        const resp = await ApiService.graphql(this.subgraphURL, getOptionsQuery(tomorrow))
         return resp.data
     }
 
