@@ -48,7 +48,8 @@ export default class Optionatoor {
                 const buys = new Map<string, IOption>()
                 const sells = new Map<string, IOption>()
 
-                // Get sells first
+                // Get sells first, then buys and make sure
+                // to keep only buys for sells that exist.
 
                 console.log('\x1b[1mGetting Lyra sells...\x1b[0m')
                 const lyraSellOptions = await this.lyra.getOptions()
@@ -56,12 +57,11 @@ export default class Optionatoor {
                     this.potentiallySet(o, sells, false)
                 }
 
-                // While getting buys, match immediately with a sell.
-                // If no sell exists, no point in keeping the buy around.
-
                 console.log('\x1b[1mGetting Lyra buys...\x1b[0m')
                 const lyraBuyOptions = await this.lyra.getOptions(true)
                 for (let o of lyraBuyOptions) {
+                    // While getting buys, match immediately with a sell.
+                    // If no sell exists, no point in keeping the buy around.
                     if (!sells.has(oKey(o))) continue
                     this.potentiallySet(o, buys, true)
                 }
@@ -69,14 +69,18 @@ export default class Optionatoor {
                 console.log('\x1b[1mGetting Premia buys...\x1b[0m')
                 const premiaOptions = await this.premia.getOptions()
                 for (let o of premiaOptions) {
+                    // While getting buys, match immediately with a sell.
+                    // If no sell exists, no point in keeping the buy around.
                     if (!sells.has(oKey(o))) continue
                     this.potentiallySet(o, buys, true)
                 }
 
                 // Look for arbitrage opportunities in the spreads
-                for (const [key, sell] of sells.entries()) {
-                    const buy = buys.get(key)
-                    if (!buy) throw new Error('this is not fair')
+                for (const [key, buy] of buys.entries()) {
+                    const sell = sells.get(key)
+                    // This should never happen because we were already
+                    // matching buys with sells that exist above.
+                    if (!sell) throw new Error('this is not fair')
 
                     if (sell.premium.gt(buy.premium)) {
                         const msg = arbitrageMessage(
