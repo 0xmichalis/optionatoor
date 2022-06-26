@@ -26,7 +26,6 @@ const schema: Joi.ObjectSchema = Joi.object({
   PREMIA_MAINNET_POOL_WBTC: Joi.string().required(),
   PREMIA_MAINNET_POOL_WETH: Joi.string().required(),
   PREMIA_MAINNET_SUBGRAPH_API_URL: Joi.string().uri().required(),
-  PRIVATE_KEY: Joi.string().required(),
 })
 
 export class ConfigService {
