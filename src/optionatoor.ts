@@ -75,6 +75,7 @@ export default class Optionatoor {
 
         while(true) {
             try {
+                console.log('Initiating a search...')
                 const buys = new Map<string, IOption>()
                 const sells = new Map<string, IOption>()
 
@@ -145,6 +146,7 @@ export default class Optionatoor {
                             await this.discordChannel.send(msg)
                     }
                 }
+                console.log('Search complete.')
             } catch (e) {
                 console.log(`Failed to check for arbitrage: ${e}`)
             } finally {
