@@ -15,7 +15,7 @@ class PremiaService {
     private subgraphURL: string
 
     private wallet: Wallet
-    private ignoredPairs = [ 'YFI/DAI', 'LINK/DAI' ]
+    private allowedPairs = [ 'WBTC/DAI', 'WETH/DAI' ]
 
     // Contract sizes
     private wbtcContractSize: string
@@ -98,7 +98,7 @@ class PremiaService {
         const opts = await this.getOptionsFromSubgraph()
 
         for (let o of opts.data.options) {
-            if (this.ignoredPairs.includes(o.pairName)) continue
+            if (!this.allowedPairs.includes(o.pairName)) continue
 
             let pool: MulticallContract
             let contractSize: string
@@ -140,7 +140,7 @@ class PremiaService {
         let i = 0
         const options: IOption[] = []
         for (let o of opts.data.options) {
-            if (this.ignoredPairs.includes(o.pairName)) continue
+            if (!this.allowedPairs.includes(o.pairName)) continue
 
             let asset: string
             let contractSize: string
