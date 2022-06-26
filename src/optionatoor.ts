@@ -150,7 +150,7 @@ export default class Optionatoor {
             } catch (e) {
                 console.log(`Failed to check for arbitrage: ${e}`)
             } finally {
-                sleep(config.get<number>('CHECK_INTERVAL_SECONDS'))
+                await sleep(config.get<number>('CHECK_INTERVAL_SECONDS'))
             }
         }
     }

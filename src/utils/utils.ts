@@ -1,5 +1,5 @@
-export const sleep = (seconds: number) => {
-    new Promise(resolve => setTimeout(resolve, seconds * 1000 ));
+export const sleep = async (seconds: number) => {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000 ));
 }
 
 export const arbitrageMessage = (
@@ -9,7 +9,7 @@ export const arbitrageMessage = (
     buyPrice: string,
     sellMarket: string,
     sellPrice: string
-) => {
+): string => {
     return `Arbitrage opportunity found!
 Asset: ${asset}
 Contract size: ${size}
