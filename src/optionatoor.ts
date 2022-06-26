@@ -65,6 +65,7 @@ export default class Optionatoor {
         }
 
         await this.premiaArbitrum.init()
+        await this.premiaFantom.init()
         await this.premiaMainnet.init()
         this.isInitialized = true
     }

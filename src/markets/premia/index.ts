@@ -88,11 +88,13 @@ class PremiaService {
             this.wethOracle.latestAnswer(),
         ]
 
+        console.log(`Calling oracles`)
         const [
             wbtcPrice,
             wethPrice,
         ] = await this.multicallProvider.all(oracleCalls)
 
+        console.log(`Getting options from subgraph`)
         const requests = []
         const opts = await this.getOptionsFromSubgraph()
 
@@ -129,6 +131,7 @@ class PremiaService {
             )
         }
 
+        console.log(`Getting quotes`)
         const premiums = await this.multicallProvider.all(requests)
 
         let i = 0
