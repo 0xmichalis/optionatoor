@@ -13,6 +13,7 @@ export default class Optionatoor {
 
     // AMMs
     private premiaArbitrum: PremiaService
+    private premiaFantom: PremiaService
     private premiaMainnet: PremiaService
     private lyra: LyraService
 
@@ -28,10 +29,17 @@ export default class Optionatoor {
             config.get('PREMIA_ARBITRUM_SUBGRAPH_API_URL'),
             config.get('PREMIA_ARBITRUM_POOL_WBTC'),
             config.get('PREMIA_ARBITRUM_POOL_WETH'),
-            config.get('PREMIA_ARBITRUM_POOL_LINK'),
             config.get('ARBITRUM_ORACLE_WBTC'),
-            config.get('ARBITRUM_ORACLE_WETH'),
-            config.get('ARBITRUM_ORACLE_LINK')
+            config.get('ARBITRUM_ORACLE_WETH')
+        )
+        this.premiaFantom = new PremiaService(
+            'Fantom',
+            config.get('FANTOM_NODE_API_URL'),
+            config.get('PREMIA_FANTOM_SUBGRAPH_API_URL'),
+            config.get('PREMIA_FANTOM_POOL_WBTC'),
+            config.get('PREMIA_FANTOM_POOL_WETH'),
+            config.get('FANTOM_ORACLE_WBTC'),
+            config.get('FANTOM_ORACLE_WETH')
         )
         this.premiaMainnet = new PremiaService(
             'Mainnet',
@@ -39,10 +47,8 @@ export default class Optionatoor {
             config.get('PREMIA_MAINNET_SUBGRAPH_API_URL'),
             config.get('PREMIA_MAINNET_POOL_WBTC'),
             config.get('PREMIA_MAINNET_POOL_WETH'),
-            config.get('PREMIA_MAINNET_POOL_LINK'),
             config.get('MAINNET_ORACLE_WBTC'),
-            config.get('MAINNET_ORACLE_WETH'),
-            config.get('MAINNET_ORACLE_LINK')
+            config.get('MAINNET_ORACLE_WETH')
         )
         this.lyra = new LyraService()
 
@@ -92,6 +98,15 @@ export default class Optionatoor {
                 console.log('\x1b[1mGetting Premia (Mainnet) buys...\x1b[0m')
                 const premiaMainnetOptions = await this.premiaMainnet.getOptions()
                 for (let o of premiaMainnetOptions) {
+                    // While getting buys, match immediately with a sell.
+                    // If no sell exists, no point in keeping the buy around.
+                    if (!sells.has(oKey(o))) continue
+                    this.potentiallySet(o, buys, true)
+                }
+
+                console.log('\x1b[1mGetting Premia (Fantom) buys...\x1b[0m')
+                const premiaFantomOptions = await this.premiaFantom.getOptions()
+                for (let o of premiaFantomOptions) {
                     // While getting buys, match immediately with a sell.
                     // If no sell exists, no point in keeping the buy around.
                     if (!sells.has(oKey(o))) continue

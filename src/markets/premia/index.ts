@@ -8,7 +8,7 @@ import { IOption } from '../../types/option'
 
 const defaultDecimals = 18;
 
-type SupportedNetwork = 'Arbitrum' | 'Mainnet'
+type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet'
 
 class PremiaService {
     // RPC providers
@@ -17,28 +17,23 @@ class PremiaService {
     private multicallProvider: MulticallProvider
     private subgraphURL: string
 
-    private wallet: Wallet
     private allowedPairs = [ 'WBTC/DAI', 'WETH/DAI' ]
 
     // Contract sizes
     private wbtcContractSize: string
     private wethContractSize: string
-    private linkContractSize: string
 
     // Pools
     private wbtcPool: MulticallContract
     private wethPool: MulticallContract
-    private linkPool: MulticallContract
 
     // Oracles
     private wbtcOracle: MulticallContract
     private wethOracle: MulticallContract
-    private linkOracle: MulticallContract
 
     // Decimals
     private wbtcDecimals = 8
     private wethDecimals = 18
-    private linkDecimals = 18
 
     constructor(
         network: SupportedNetwork,
@@ -46,22 +41,16 @@ class PremiaService {
         subgraphURL: string,
         btcPool: string,
         ethPool: string,
-        linkPool: string,
         btcOracle: string,
-        ethOracle: string,
-        linkOracle: string
+        ethOracle: string
     ) {
         this.network = network
         this.provider = new providers.StaticJsonRpcProvider(providerURL)
         this.multicallProvider = new MulticallProvider(this.provider)
         this.subgraphURL = subgraphURL
 
-        this.wallet = new ethers.Wallet(config.get('PRIVATE_KEY'), this.provider)
-        console.log(`Wallet address: ${this.wallet.address}`)
-
         this.wbtcContractSize = config.get('CONTRACT_SIZE_BTC')
         this.wethContractSize = config.get('CONTRACT_SIZE_ETH')
-        this.linkContractSize = config.get('CONTRACT_SIZE_LINK')
 
         const poolAbi = [
             'function getPoolSettings() external view returns ((address underlying, address base, address underlyingOracle, address baseOracle))',
@@ -69,14 +58,12 @@ class PremiaService {
         ]
         this.wbtcPool = new MulticallContract(btcPool, poolAbi)
         this.wethPool = new MulticallContract(ethPool, poolAbi)
-        this.linkPool = new MulticallContract(linkPool, poolAbi)
 
         const oracleAbi = [
             'function latestAnswer() external view returns (uint256)',
         ]
         this.wbtcOracle = new MulticallContract(btcOracle, oracleAbi)
         this.wethOracle = new MulticallContract(ethOracle, oracleAbi)
-        this.linkOracle = new MulticallContract(linkOracle, oracleAbi)
     }
 
     async init(): Promise<void> {
@@ -99,13 +86,11 @@ class PremiaService {
         const oracleCalls = [
             this.wbtcOracle.latestAnswer(),
             this.wethOracle.latestAnswer(),
-            this.linkOracle.latestAnswer(),
         ]
 
         const [
             wbtcPrice,
             wethPrice,
-            linkPrice,
         ] = await this.multicallProvider.all(oracleCalls)
 
         const requests = []
@@ -129,18 +114,13 @@ class PremiaService {
                     decimals = this.wethDecimals
                     pool = this.wethPool
                     break
-                case 'LINK/DAI':
-                    contractSize = this.linkContractSize
-                    decimals = this.linkDecimals
-                    pool = this.linkPool
-                    break
                 default:
                     throw Error(`unknown pair: ${o.pairName}`)
             }
- 
+
             requests.push(
                 pool.quote(
-                    this.wallet.address,
+                    '0x0000000000000000000000000000000000000001',
                     o.maturity,
                     o.strike64x64,
                     utils.parseUnits(contractSize, decimals),
@@ -170,11 +150,6 @@ class PremiaService {
                     asset = 'ETH'
                     contractSize = this.wethContractSize
                     price = wethPrice
-                    break
-                case 'LINK/DAI':
-                    asset = 'LINK'
-                    contractSize = this.linkContractSize
-                    price = linkPrice
                     break
                 default:
                     throw Error(`unknown pair: ${o.pairName}`)
