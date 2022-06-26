@@ -8,7 +8,7 @@ import { IOption } from '../../types/option'
 
 const defaultDecimals = 18;
 
-type SupportedNetwork = 'Arbitrum'
+type SupportedNetwork = 'Arbitrum' | 'Mainnet'
 
 class PremiaService {
     // RPC providers

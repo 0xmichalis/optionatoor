@@ -13,10 +13,18 @@ const schema: Joi.ObjectSchema = Joi.object({
   CONTRACT_SIZE_LINK: Joi.string().required(),
   DISCORD_BOT_TOKEN: Joi.string().optional().allow(''),
   DISCORD_CHANNEL_ID: Joi.string().optional().allow(''),
+  MAINNET_NODE_API_URL: Joi.string().uri().required(),
+  MAINNET_ORACLE_WBTC: Joi.string().required(),
+  MAINNET_ORACLE_WETH: Joi.string().required(),
+  MAINNET_ORACLE_LINK: Joi.string().required(),
   PREMIA_ARBITRUM_POOL_WBTC: Joi.string().required(),
   PREMIA_ARBITRUM_POOL_WETH: Joi.string().required(),
   PREMIA_ARBITRUM_POOL_LINK: Joi.string().required(),
   PREMIA_ARBITRUM_SUBGRAPH_API_URL: Joi.string().uri().required(),
+  PREMIA_MAINNET_POOL_WBTC: Joi.string().required(),
+  PREMIA_MAINNET_POOL_WETH: Joi.string().required(),
+  PREMIA_MAINNET_POOL_LINK: Joi.string().required(),
+  PREMIA_MAINNET_SUBGRAPH_API_URL: Joi.string().uri().required(),
   PRIVATE_KEY: Joi.string().required(),
 })
 

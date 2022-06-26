@@ -13,6 +13,7 @@ export default class Optionatoor {
 
     // AMMs
     private premiaArbitrum: PremiaService
+    private premiaMainnet: PremiaService
     private lyra: LyraService
 
     // Discord stuff
@@ -32,6 +33,17 @@ export default class Optionatoor {
             config.get('ARBITRUM_ORACLE_WETH'),
             config.get('ARBITRUM_ORACLE_LINK')
         )
+        this.premiaMainnet = new PremiaService(
+            'Mainnet',
+            config.get('MAINNET_NODE_API_URL'),
+            config.get('PREMIA_MAINNET_SUBGRAPH_API_URL'),
+            config.get('PREMIA_MAINNET_POOL_WBTC'),
+            config.get('PREMIA_MAINNET_POOL_WETH'),
+            config.get('PREMIA_MAINNET_POOL_LINK'),
+            config.get('MAINNET_ORACLE_WBTC'),
+            config.get('MAINNET_ORACLE_WETH'),
+            config.get('MAINNET_ORACLE_LINK')
+        )
         this.lyra = new LyraService()
 
         // Setup Discord client
@@ -47,6 +59,7 @@ export default class Optionatoor {
         }
 
         await this.premiaArbitrum.init()
+        await this.premiaMainnet.init()
         this.isInitialized = true
     }
 
@@ -76,9 +89,18 @@ export default class Optionatoor {
                     this.potentiallySet(o, buys, true)
                 }
 
+                console.log('\x1b[1mGetting Premia (Mainnet) buys...\x1b[0m')
+                const premiaMainnetOptions = await this.premiaMainnet.getOptions()
+                for (let o of premiaMainnetOptions) {
+                    // While getting buys, match immediately with a sell.
+                    // If no sell exists, no point in keeping the buy around.
+                    if (!sells.has(oKey(o))) continue
+                    this.potentiallySet(o, buys, true)
+                }
+
                 console.log('\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m')
-                const premiaOptions = await this.premiaArbitrum.getOptions()
-                for (let o of premiaOptions) {
+                const premiaArbitrumOptions = await this.premiaArbitrum.getOptions()
+                for (let o of premiaArbitrumOptions) {
                     // While getting buys, match immediately with a sell.
                     // If no sell exists, no point in keeping the buy around.
                     if (!sells.has(oKey(o))) continue
