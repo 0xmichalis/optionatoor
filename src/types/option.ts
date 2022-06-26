@@ -2,7 +2,7 @@ import { utils } from 'ethers'
 import { BigNumber } from '@ethersproject/bignumber';
 
 export interface IOption {
-    market: 'Premia' | 'Lyra'
+    market: string
     optionType: 'CALL' | 'PUT'
     isBuy: boolean
     asset: string

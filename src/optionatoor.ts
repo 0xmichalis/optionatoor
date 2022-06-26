@@ -12,7 +12,7 @@ export default class Optionatoor {
     private isInitialized: boolean = false
 
     // AMMs
-    private premia: PremiaService
+    private premiaArbitrum: PremiaService
     private lyra: LyraService
 
     // Discord stuff
@@ -21,7 +21,17 @@ export default class Optionatoor {
 
     constructor() {
         // Setup AMM clients
-        this.premia = new PremiaService()
+        this.premiaArbitrum = new PremiaService(
+            'Arbitrum',
+            config.get('ARBITRUM_NODE_API_URL'),
+            config.get('PREMIA_ARBITRUM_SUBGRAPH_API_URL'),
+            config.get('PREMIA_ARBITRUM_POOL_WBTC'),
+            config.get('PREMIA_ARBITRUM_POOL_WETH'),
+            config.get('PREMIA_ARBITRUM_POOL_LINK'),
+            config.get('ARBITRUM_ORACLE_WBTC'),
+            config.get('ARBITRUM_ORACLE_WETH'),
+            config.get('ARBITRUM_ORACLE_LINK')
+        )
         this.lyra = new LyraService()
 
         // Setup Discord client
@@ -36,7 +46,7 @@ export default class Optionatoor {
             this.discordChannel = this.discordClient.channels.cache.get(channelID) as TextChannel
         }
 
-        await this.premia.init()
+        await this.premiaArbitrum.init()
         this.isInitialized = true
     }
 
@@ -66,8 +76,8 @@ export default class Optionatoor {
                     this.potentiallySet(o, buys, true)
                 }
 
-                console.log('\x1b[1mGetting Premia buys...\x1b[0m')
-                const premiaOptions = await this.premia.getOptions()
+                console.log('\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m')
+                const premiaOptions = await this.premiaArbitrum.getOptions()
                 for (let o of premiaOptions) {
                     // While getting buys, match immediately with a sell.
                     // If no sell exists, no point in keeping the buy around.

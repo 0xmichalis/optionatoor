@@ -8,8 +8,11 @@ import { IOption } from '../../types/option'
 
 const defaultDecimals = 18;
 
+type SupportedNetwork = 'Arbitrum'
+
 class PremiaService {
     // RPC providers
+    private network: SupportedNetwork
     private provider: providers.StaticJsonRpcProvider
     private multicallProvider: MulticallProvider
     private subgraphURL: string
@@ -37,10 +40,21 @@ class PremiaService {
     private wethDecimals = 18
     private linkDecimals = 18
 
-    constructor() {
-        this.provider = new providers.StaticJsonRpcProvider(config.get('ARBITRUM_NODE_API_URL'))
+    constructor(
+        network: SupportedNetwork,
+        providerURL: string,
+        subgraphURL: string,
+        btcPool: string,
+        ethPool: string,
+        linkPool: string,
+        btcOracle: string,
+        ethOracle: string,
+        linkOracle: string
+    ) {
+        this.network = network
+        this.provider = new providers.StaticJsonRpcProvider(providerURL)
         this.multicallProvider = new MulticallProvider(this.provider)
-        this.subgraphURL = config.get('PREMIA_SUBGRAPH_API_URL')
+        this.subgraphURL = subgraphURL
 
         this.wallet = new ethers.Wallet(config.get('PRIVATE_KEY'), this.provider)
         console.log(`Wallet address: ${this.wallet.address}`)
@@ -53,16 +67,16 @@ class PremiaService {
             'function getPoolSettings() external view returns ((address underlying, address base, address underlyingOracle, address baseOracle))',
             'function quote(address feePayer, uint64 maturity, int128 strike64x64, uint256 contractSize, bool isCall) external view returns (int128 baseCost64x64, int128 feeCost64x64, int128 cLevel64x64, int128 slippageCoefficient64x64)',
         ]
-        this.wbtcPool = new MulticallContract(config.get('PREMIA_POOL_WBTC'), poolAbi)
-        this.wethPool = new MulticallContract(config.get('PREMIA_POOL_WETH'), poolAbi)
-        this.linkPool = new MulticallContract(config.get('PREMIA_POOL_LINK'), poolAbi)
+        this.wbtcPool = new MulticallContract(btcPool, poolAbi)
+        this.wethPool = new MulticallContract(ethPool, poolAbi)
+        this.linkPool = new MulticallContract(linkPool, poolAbi)
 
         const oracleAbi = [
             'function latestAnswer() external view returns (uint256)',
         ]
-        this.wbtcOracle = new MulticallContract(config.get('ORACLE_WBTC'), oracleAbi)
-        this.wethOracle = new MulticallContract(config.get('ORACLE_WETH'), oracleAbi)
-        this.linkOracle = new MulticallContract(config.get('ORACLE_LINK'), oracleAbi)
+        this.wbtcOracle = new MulticallContract(btcOracle, oracleAbi)
+        this.wethOracle = new MulticallContract(ethOracle, oracleAbi)
+        this.linkOracle = new MulticallContract(linkOracle, oracleAbi)
     }
 
     async init(): Promise<void> {
@@ -183,7 +197,7 @@ class PremiaService {
             }
 
             options.push({
-                market: 'Premia',
+                market: `Premia (${this.network})`,
                 optionType: o.optionType,
                 isBuy: true,
                 asset,
