@@ -3,6 +3,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 
 export interface IOption {
     market: string
+    link: string
     optionType: 'CALL' | 'PUT'
     isBuy: boolean
     asset: string

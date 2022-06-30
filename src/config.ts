@@ -9,6 +9,8 @@ const schema: Joi.ObjectSchema = Joi.object({
   CHECK_INTERVAL_SECONDS: Joi.number().required(),
   CONTRACT_SIZE_BTC: Joi.string().required(),
   CONTRACT_SIZE_ETH: Joi.string().required(),
+  DAPP_LYRA_LINK: Joi.string().uri().required(),
+  DAPP_PREMIA_LINK: Joi.string().uri().required(),
   DISCORD_BOT_TOKEN: Joi.string().optional().allow(''),
   DISCORD_CHANNEL_ID: Joi.string().optional().allow(''),
   FANTOM_NODE_API_URL: Joi.string().uri().required(),

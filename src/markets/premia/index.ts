@@ -11,6 +11,8 @@ const defaultDecimals = 18;
 type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet'
 
 class PremiaService {
+    private dappLink: string
+
     // RPC providers
     private network: SupportedNetwork
     private provider: providers.StaticJsonRpcProvider
@@ -44,6 +46,8 @@ class PremiaService {
         btcOracle: string,
         ethOracle: string
     ) {
+        this.dappLink = config.get('DAPP_PREMIA_LINK')
+
         this.network = network
         this.provider = new providers.StaticJsonRpcProvider(providerURL)
         this.multicallProvider = new MulticallProvider(this.provider)
@@ -176,6 +180,7 @@ class PremiaService {
 
             options.push({
                 market: `Premia (${this.network})`,
+                link: this.dappLink,
                 optionType: o.optionType,
                 isBuy: true,
                 asset,

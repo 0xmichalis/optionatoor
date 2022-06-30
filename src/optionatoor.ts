@@ -136,8 +136,10 @@ export default class Optionatoor {
                             key,
                             sell.contractSize,
                             buy.market,
+                            buy.link,
                             utils.formatUnits(buy.premium),
                             sell.market,
+                            sell.link,
                             utils.formatUnits(sell.premium)
                         )
                         console.log(msg)

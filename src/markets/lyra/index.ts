@@ -6,6 +6,7 @@ import { IOption } from '../../types/option'
 
 class LyraService {
     private lyra: Lyra
+    private dappLink: string
 
     // Contract sizes
     private btcContractSize: string
@@ -13,6 +14,7 @@ class LyraService {
 
     constructor() {
         this.lyra = new Lyra()
+        this.dappLink = config.get('DAPP_LYRA_LINK')
 
         this.btcContractSize = config.get('CONTRACT_SIZE_BTC')
         this.ethContractSize = config.get('CONTRACT_SIZE_ETH')
@@ -47,6 +49,7 @@ class LyraService {
                     if (this.fromBigNumber(call.premium) != 0) {
                         options.push({
                             market: 'Lyra',
+                            link: this.dappLink,
                             optionType: 'CALL',
                             isBuy,
                             asset: market.name,
@@ -61,6 +64,7 @@ class LyraService {
                     if (this.fromBigNumber(put.premium) != 0) {
                         options.push({
                             market: 'Lyra',
+                            link: this.dappLink,
                             optionType: 'PUT',
                             isBuy,
                             asset: market.name,
