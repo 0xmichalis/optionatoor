@@ -115,14 +115,22 @@ export default class Optionatoor {
                     this.potentiallySet(o, buys, true)
                 }
 
-                console.log('\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m')
-                const premiaArbitrumOptions = await this.premiaArbitrum.getOptions()
-                for (let o of premiaArbitrumOptions) {
-                    // While getting buys, match immediately with a sell.
-                    // If no sell exists, no point in keeping the buy around.
-                    if (!sells.has(oKey(o))) continue
-                    this.potentiallySet(o, buys, true)
+                try {
+                    console.log('\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m')
+                    const premiaArbitrumOptions = await this.premiaArbitrum.getOptions()
+                    for (let o of premiaArbitrumOptions) {
+                        // While getting buys, match immediately with a sell.
+                        // If no sell exists, no point in keeping the buy around.
+                        if (!sells.has(oKey(o))) continue
+                        this.potentiallySet(o, buys, true)
+                    }
+                } catch (e) {
+                    // Arbitrum has been a problematic RPC and there is no
+                    // reason not to do an arb check only with the rest of
+                    // the networks.
+                    console.log(`Failed to fetch options from Premia Arbitrum: ${e}`)
                 }
+
 
                 // Look for arbitrage opportunities in the spreads
                 for (const [key, buy] of buys.entries()) {
