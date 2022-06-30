@@ -6,7 +6,7 @@ import { IOption } from '../../types/option'
 
 class LyraService {
     private lyra: Lyra
-    private dappLink: string
+    private dappLink = 'https://app.lyra.finance'
 
     // Contract sizes
     private btcContractSize: string
@@ -14,7 +14,6 @@ class LyraService {
 
     constructor() {
         this.lyra = new Lyra()
-        this.dappLink = config.get('DAPP_LYRA_LINK')
 
         this.btcContractSize = config.get('CONTRACT_SIZE_BTC')
         this.ethContractSize = config.get('CONTRACT_SIZE_ETH')
