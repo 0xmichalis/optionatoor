@@ -56,12 +56,13 @@ export default class Optionatoor {
         this.discordClient = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
         // Handle shutdown gracefully
-        process.on('SIGINT', () => {
-            console.log('Received interrupt signal.');
+        const terminate = () => {
             this.discordClient.destroy()
             console.log('Discord client shutdown.');
             process.exit(0)
-        });
+        }
+        process.on('SIGINT', terminate);
+        process.on('SIGTERM', terminate);
     }
 
     public async init(): Promise<void> {
