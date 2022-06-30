@@ -54,12 +54,19 @@ export default class Optionatoor {
 
         // Setup Discord client
         this.discordClient = new Client({ intents: [Intents.FLAGS.GUILDS] });
+
+        // Handle shutdown gracefully
+        process.on('SIGINT', () => {
+            console.log('Received interrupt signal.');
+            this.discordClient.destroy()
+            console.log('Discord client shutdown.');
+            process.exit(0)
+        });
     }
 
     public async init(): Promise<void> {
         const discordToken = config.get<string>('DISCORD_BOT_TOKEN')
         if (discordToken) {
-            this.discordClient.destroy()
             await this.discordClient.login(discordToken)
             const channelID = config.get<string>('DISCORD_CHANNEL_ID')
             this.discordChannel = this.discordClient.channels.cache.get(channelID) as TextChannel
