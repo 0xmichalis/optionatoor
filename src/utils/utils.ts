@@ -14,8 +14,8 @@ export const arbitrageMessage = (
 ): string => {
     return `> Asset: **${asset}**
 > Contract size: **${size}**
-> Buy in ${buyMarket} (**${buyLink}**) at **$${trimDecimals(buyPrice)}**
-> Sell in ${sellMarket} (**${sellLink}**) at **$${trimDecimals(sellPrice)}**`
+> Buy at **$${trimDecimals(buyPrice)}** in ${buyMarket} (**${buyLink}**)
+> Sell at **$${trimDecimals(sellPrice)}** in ${sellMarket} (**${sellLink}**)`
 }
 
 const trimDecimals = (price: string): string => {
