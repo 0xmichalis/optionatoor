@@ -17,6 +17,8 @@ class LyraService {
 
         this.btcContractSize = config.get('CONTRACT_SIZE_BTC')
         this.ethContractSize = config.get('CONTRACT_SIZE_ETH')
+
+        console.log(`Lyra client initialized.`)
     }
 
     fromBigNumber(number: BigNumber, decimals: number = 18): number {

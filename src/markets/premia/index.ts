@@ -11,6 +11,8 @@ const defaultDecimals = 18;
 type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet'
 
 class PremiaService {
+    // Whether the class is initialized
+    private isInitialized: boolean = false
     private dappLink = 'https://app.premia.finance'
 
     // RPC providers
@@ -70,6 +72,8 @@ class PremiaService {
 
     async init(): Promise<void> {
         await this.multicallProvider.init()
+        this.isInitialized = true
+        console.log(`Premia client for ${this.network} initialized.`)
     }
 
     private bn64x64ToBn(bn64x64: BigNumber, decimals = defaultDecimals): BigNumber {
@@ -83,6 +87,8 @@ class PremiaService {
     }
 
     async getOptions(): Promise<IOption[]> {
+        if (!this.isInitialized) throw Error('uninitialized: did you run init()?')
+
         // Fetch oracle prices to estimate premium size in USD
         // for calls as they are denominated in the underlying.
         const oracleCalls = [

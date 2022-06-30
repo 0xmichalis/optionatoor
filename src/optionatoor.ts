@@ -68,9 +68,12 @@ export default class Optionatoor {
     public async init(): Promise<void> {
         const discordToken = config.get<string>('DISCORD_BOT_TOKEN')
         if (discordToken) {
-            await this.discordClient.login(discordToken)
             const channelID = config.get<string>('DISCORD_CHANNEL_ID')
+            console.log(`Discord token found. Logging into Discord channel ${channelID}...`)
+            await this.discordClient.login(discordToken)
             this.discordChannel = this.discordClient.channels.cache.get(channelID) as TextChannel
+            if (!this.discordChannel)
+                throw new Error(`Failed to connect to Discord channel ${channelID}`)
         }
 
         await this.premiaArbitrum.init()
