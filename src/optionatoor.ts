@@ -82,6 +82,11 @@ export default class Optionatoor {
                 `Discord token found. Logging into Discord channel ${channelID}...`
             );
             await this.discordClient.login(discordToken);
+            while (!this.discordClient.isReady()) {
+                console.log('Waiting for Discord client to initialize...');
+                await sleep(5);
+            }
+
             this.discordChannel = this.discordClient.channels.cache.get(
                 channelID
             ) as TextChannel;
