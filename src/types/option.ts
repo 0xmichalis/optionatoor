@@ -1,5 +1,4 @@
-import { utils } from 'ethers'
-import { BigNumber } from '@ethersproject/bignumber';
+import { utils, BigNumber } from 'ethers'
 
 export interface IOption {
     market: string
