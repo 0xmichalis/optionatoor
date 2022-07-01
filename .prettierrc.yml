@@ -1,0 +1,9 @@
+# SPDX-FileCopyrightText: 2021 Toucan Labs
+#
+# SPDX-License-Identifier: LicenseRef-Proprietary
+
+semi: true
+singleQuote: true
+trailingComma: es5
+tabWidth: 4
+arrowParens: always

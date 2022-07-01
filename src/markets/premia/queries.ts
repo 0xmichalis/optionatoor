@@ -11,4 +11,4 @@ export const getOptionsQuery = (now: number) => `
     lastTradePrice
   }
 }
-`
+`;

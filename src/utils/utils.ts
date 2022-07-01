@@ -1,6 +1,6 @@
 export const sleep = async (seconds: number) => {
-    return new Promise(resolve => setTimeout(resolve, seconds * 1000 ));
-}
+    return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+};
 
 export const arbitrageMessage = (
     asset: string,
@@ -15,9 +15,9 @@ export const arbitrageMessage = (
     return `> Asset: **${asset}**
 > Contract size: **${size}**
 > Buy at **$${trimDecimals(buyPrice)}** in ${buyMarket} (**${buyLink}**)
-> Sell at **$${trimDecimals(sellPrice)}** in ${sellMarket} (**${sellLink}**)`
-}
+> Sell at **$${trimDecimals(sellPrice)}** in ${sellMarket} (**${sellLink}**)`;
+};
 
 const trimDecimals = (price: string): string => {
-    return parseFloat(price).toFixed(2)
-}
+    return parseFloat(price).toFixed(2);
+};

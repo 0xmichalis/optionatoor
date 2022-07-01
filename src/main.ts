@@ -1,8 +1,8 @@
-import Optionatoor from './optionatoor'
+import Optionatoor from './optionatoor';
 
 (async () => {
-    const tmpl = new Optionatoor()
-    await tmpl.init()
+    const tmpl = new Optionatoor();
+    await tmpl.init();
 
-    tmpl.run()
-})()
+    tmpl.run();
+})();

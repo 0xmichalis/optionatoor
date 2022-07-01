@@ -1,4 +1,4 @@
-name: Build
+name: Lint
 
 on:
     push:
@@ -7,7 +7,7 @@ on:
         branches: [main]
 
 jobs:
-    build:
+    lint:
         runs-on: ubuntu-latest
 
         strategy:
@@ -26,5 +26,5 @@ jobs:
             - name: Install packages
               run: yarn install --immutable
 
-            - name: Build
-              run: yarn build
+            - name: Run Prettier
+              run: yarn format:check
