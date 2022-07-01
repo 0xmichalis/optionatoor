@@ -1,5 +1,5 @@
 import { Client, Intents, TextChannel } from 'discord.js';
-import { utils } from 'ethers'
+import { utils, BigNumber } from 'ethers'
 
 import { config } from './config'
 import LyraService from './markets/lyra'
@@ -17,11 +17,19 @@ export default class Optionatoor {
     private premiaMainnet: PremiaService
     private lyra: LyraService
 
+    private additionalSpread: BigNumber
+
     // Discord stuff
     private discordChannel: TextChannel | undefined
     private discordClient: Client
 
     constructor() {
+        const additionalSpread = config.get<string>('ADDITIONAL_SPREAD_USD') || '0'
+        // Parsing to 18 decimals since it is used with 18-decimal premiums
+        // to calculate whether an arbitrage exists
+        this.additionalSpread = utils.parseUnits(additionalSpread)
+        console.log(`Using $${additionalSpread} additional in spread checks.`)
+
         // Setup AMM clients
         this.premiaArbitrum = new PremiaService(
             'Arbitrum',
@@ -151,7 +159,7 @@ export default class Optionatoor {
                     // matching buys with sells that exist above.
                     if (!sell) throw new Error('this is not fair')
 
-                    if (sell.premium.gt(buy.premium)) {
+                    if (sell.premium.gt(buy.premium.add(this.additionalSpread))) {
                         const msg = arbitrageMessage(
                             key,
                             sell.contractSize,
