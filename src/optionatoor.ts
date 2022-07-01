@@ -126,13 +126,18 @@ export default class Optionatoor {
                     this.potentiallySet(o, buys, true)
                 }
 
-                console.log('\x1b[1mGetting Premia (Fantom) buys...\x1b[0m')
-                const premiaFantomOptions = await this.premiaFantom.getOptions()
-                for (let o of premiaFantomOptions) {
-                    // While getting buys, match immediately with a sell.
-                    // If no sell exists, no point in keeping the buy around.
-                    if (!sells.has(oKey(o))) continue
-                    this.potentiallySet(o, buys, true)
+                try {
+                    console.log('\x1b[1mGetting Premia (Fantom) buys...\x1b[0m')
+                    const premiaFantomOptions = await this.premiaFantom.getOptions()
+                    for (let o of premiaFantomOptions) {
+                        // While getting buys, match immediately with a sell.
+                        // If no sell exists, no point in keeping the buy around.
+                        if (!sells.has(oKey(o))) continue
+                        this.potentiallySet(o, buys, true)
+                    }
+                } catch (e) {
+                    // Fantom RPCs can also be a pita.
+                    console.log(`Failed to fetch options from Premia Fantom: ${e}`)
                 }
 
                 try {
