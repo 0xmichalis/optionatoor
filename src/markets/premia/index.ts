@@ -51,6 +51,7 @@ class PremiaService {
         btcOracle: string,
         ethOracle: string
     ) {
+        console.log(`Initializing Premia ${network} client...`);
         this.network = network;
         this.provider = new providers.StaticJsonRpcProvider(providerURL);
         this.multicallProvider = new MulticallProvider(this.provider);

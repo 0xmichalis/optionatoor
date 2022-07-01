@@ -13,6 +13,7 @@ class LyraService {
     private ethContractSize: string;
 
     constructor() {
+        console.log(`Initializing Lyra client...`);
         this.lyra = new Lyra();
 
         this.btcContractSize = config.get('CONTRACT_SIZE_BTC');
