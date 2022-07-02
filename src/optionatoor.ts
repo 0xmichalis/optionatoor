@@ -1,4 +1,4 @@
-import { Client, Intents, TextChannel } from 'discord.js';
+import { Client, Intents, TextChannel, ThreadChannel } from 'discord.js';
 import { utils, BigNumber } from 'ethers';
 
 import { config } from './config';
@@ -20,7 +20,7 @@ export default class Optionatoor {
     private additionalSpread: BigNumber;
 
     // Discord stuff
-    private discordChannel: TextChannel | undefined;
+    private discordChannel: TextChannel | ThreadChannel | undefined;
     private discordClient: Client;
 
     constructor() {
@@ -87,13 +87,23 @@ export default class Optionatoor {
                 await sleep(5);
             }
 
-            this.discordChannel = this.discordClient.channels.cache.get(
-                channelID
-            ) as TextChannel;
-            if (!this.discordChannel)
+            const channel = await this.discordClient.channels.fetch(channelID);
+            if (!channel)
                 throw new Error(
                     `Failed to connect to Discord channel ${channelID}`
                 );
+
+            if (channel.isText()) {
+                console.log(`Channel ${channelID} is text-based.`);
+                this.discordChannel = channel as TextChannel;
+            } else if (channel.isThread()) {
+                console.log(`Channel ${channelID} is a thread.`);
+                this.discordChannel = channel as ThreadChannel;
+            } else {
+                throw new Error(
+                    `Channel ${channelID} is not text-based or a thread!`
+                );
+            }
         }
 
         await this.premiaArbitrum.init();

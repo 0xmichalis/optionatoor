@@ -1,4 +1,4 @@
-import { BigNumber, ethers, providers, utils, Wallet } from 'ethers';
+import { BigNumber, providers, utils } from 'ethers';
 import {
     Contract as MulticallContract,
     Provider as MulticallProvider,
