@@ -93,12 +93,12 @@ export default class Optionatoor {
                     `Failed to connect to Discord channel ${channelID}`
                 );
 
-            if (channel.isText()) {
-                console.log(`Channel ${channelID} is text-based.`);
-                this.discordChannel = channel as TextChannel;
-            } else if (channel.isThread()) {
+            if (channel.isThread()) {
                 console.log(`Channel ${channelID} is a thread.`);
                 this.discordChannel = channel as ThreadChannel;
+            } else if (channel.isText()) {
+                console.log(`Channel ${channelID} is text-based.`);
+                this.discordChannel = channel as TextChannel;
             } else {
                 throw new Error(
                     `Channel ${channelID} is not text-based or a thread!`
