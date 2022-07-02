@@ -1,6 +1,9 @@
 {
     "compilerOptions": {
         "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
         "allowJs": false,
         "module": "commonjs",
         "esModuleInterop": true,

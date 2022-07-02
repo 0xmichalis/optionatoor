@@ -1,4 +1,3 @@
-import { Client, Intents, TextChannel, ThreadChannel } from 'discord.js';
 import { utils, BigNumber } from 'ethers';
 
 import { config } from './config';
