@@ -4,6 +4,7 @@ import { utils, BigNumber } from 'ethers';
 import { config } from './config';
 import LyraService from './markets/lyra';
 import PremiaService from './markets/premia';
+import DiscordService from './services/discord';
 import { IOption, oKey } from './types/option';
 import { arbitrageMessage, sleep } from './utils/utils';
 
@@ -19,9 +20,8 @@ export default class Optionatoor {
 
     private additionalSpread: BigNumber;
 
-    // Discord stuff
-    private discordChannel: TextChannel | ThreadChannel | undefined;
-    private discordClient: Client;
+    // Discord client
+    private discordClient: DiscordService;
 
     constructor() {
         const additionalSpread =
@@ -62,48 +62,14 @@ export default class Optionatoor {
         this.lyra = new LyraService();
 
         // Setup Discord client
-        this.discordClient = new Client({ intents: [Intents.FLAGS.GUILDS] });
-
-        // Handle shutdown gracefully
-        const terminate = () => {
-            this.discordClient.destroy();
-            console.log('Discord client shutdown.');
-            process.exit(0);
-        };
-        process.on('SIGINT', terminate);
-        process.on('SIGTERM', terminate);
+        this.discordClient = new DiscordService();
     }
 
     public async init(): Promise<void> {
         const discordToken = config.get<string>('DISCORD_BOT_TOKEN');
         if (discordToken) {
             const channelID = config.get<string>('DISCORD_CHANNEL_ID');
-            console.log(
-                `Discord token found. Logging into Discord channel ${channelID}...`
-            );
-            await this.discordClient.login(discordToken);
-            while (!this.discordClient.isReady()) {
-                console.log('Waiting for Discord client to initialize...');
-                await sleep(5);
-            }
-
-            const channel = await this.discordClient.channels.fetch(channelID);
-            if (!channel)
-                throw new Error(
-                    `Failed to connect to Discord channel ${channelID}`
-                );
-
-            if (channel.isThread()) {
-                console.log(`Channel ${channelID} is a thread.`);
-                this.discordChannel = channel as ThreadChannel;
-            } else if (channel.isText()) {
-                console.log(`Channel ${channelID} is text-based.`);
-                this.discordChannel = channel as TextChannel;
-            } else {
-                throw new Error(
-                    `Channel ${channelID} is not text-based or a thread!`
-                );
-            }
+            await this.discordClient.init(discordToken, channelID);
         }
 
         await this.premiaArbitrum.init();
@@ -211,9 +177,7 @@ export default class Optionatoor {
                             utils.formatUnits(sell.premium)
                         );
                         console.log(msg);
-
-                        if (this.discordChannel)
-                            await this.discordChannel.send(msg);
+                        await this.discordClient.send(msg);
                     }
                 }
                 console.log('Search complete.');
