@@ -24,8 +24,9 @@ export default class Optionatoor {
     private discordClient: DiscordService;
 
     constructor() {
-        const additionalSpread =
-            config.get<number>('ADDITIONAL_SPREAD_USD').toString() || '0';
+        const additionalSpread = config
+            .get<number>('ADDITIONAL_SPREAD_USD')
+            .toString();
         // Parsing to 18 decimals since it is used with 18-decimal premiums
         // to calculate whether an arbitrage exists
         this.additionalSpread = utils.parseUnits(additionalSpread);

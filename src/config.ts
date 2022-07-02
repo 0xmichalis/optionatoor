@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 import Joi from 'joi';
 
 const schema: Joi.ObjectSchema = Joi.object({
-    ADDITIONAL_SPREAD_USD: Joi.number().optional(),
+    ADDITIONAL_SPREAD_USD: Joi.number().optional().default(0),
     ARBITRUM_NODE_API_URL: Joi.string().uri().required(),
     ARBITRUM_ORACLE_WBTC: Joi.string().required(),
     ARBITRUM_ORACLE_WETH: Joi.string().required(),
