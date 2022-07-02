@@ -35,13 +35,12 @@ export class ConfigService {
         const { parsed: parsedConfig, error: parseError } = dotenv.config();
         if (parseError) {
             console.log(`No .env file found, config.get will use process.env`);
-            return;
-        }
-
-        const { error: validationError, value: config } =
-            schema.validate(parsedConfig);
-        if (validationError) {
-            throw Error(`Failed to validate config: ${validationError}`);
+        } else {
+            const { error, value } = schema.validate(parsedConfig);
+            if (error) {
+                throw Error(`Failed to validate config: ${error}`);
+            }
+            this.config = value;
         }
 
         // Custom validation
@@ -55,8 +54,6 @@ export class ConfigService {
                 'DISCORD_BOT_TOKEN and DISCORD_CHANNEL_ID need to be specified together'
             );
         }
-
-        this.config = config;
     }
 
     get<T>(key: string): T {

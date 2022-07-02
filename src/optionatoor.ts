@@ -25,7 +25,7 @@ export default class Optionatoor {
 
     constructor() {
         const additionalSpread =
-            config.get<string>('ADDITIONAL_SPREAD_USD') || '0';
+            config.get<number>('ADDITIONAL_SPREAD_USD').toString() || '0';
         // Parsing to 18 decimals since it is used with 18-decimal premiums
         // to calculate whether an arbitrage exists
         this.additionalSpread = utils.parseUnits(additionalSpread);
