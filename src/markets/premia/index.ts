@@ -9,8 +9,6 @@ import { config } from '../../config';
 import { getOptionsQuery } from './queries';
 import { IOption } from '../../types/option';
 
-const defaultDecimals = 18;
-
 type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet';
 
 class PremiaService {
@@ -77,13 +75,10 @@ class PremiaService {
     async init(): Promise<void> {
         await this.multicallProvider.init();
         this.isInitialized = true;
-        console.log(`Premia client for ${this.network} initialized.`);
+        console.log(`Premia ${this.network} client initialized.`);
     }
 
-    private bn64x64ToBn(
-        bn64x64: BigNumber,
-        decimals = defaultDecimals
-    ): BigNumber {
+    private bn64x64ToBn(bn64x64: BigNumber, decimals = 18): BigNumber {
         return bn64x64.mul(BigNumber.from(10).pow(decimals)).shr(64);
     }
 
