@@ -1,10 +1,11 @@
 # Optionatoor
 
-Arbitraging options AMMs for greater good.
+Arbitraging option markets for greater good.
 
 ## Build
 
 ```
+yarn install
 yarn build
 ```
 
