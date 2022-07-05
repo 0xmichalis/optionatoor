@@ -27,7 +27,7 @@ class LyraClient {
     }
 
     // Set isBuy to true to get quotes for long options
-    async getOptions(isBuy = false): Promise<IOption[]> {
+    async getOptions(isBuy: boolean): Promise<IOption[]> {
         const options: IOption[] = [];
 
         // Fetch all markets

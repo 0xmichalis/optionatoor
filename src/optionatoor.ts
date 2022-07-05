@@ -11,12 +11,14 @@ export default class Optionatoor {
     // Whether the class is initialized
     private isInitialized: boolean = false;
 
-    // AMMs
+    // Market clients
+    private lyra: LyraClient;
     private premiaArbitrum: PremiaClient;
     private premiaFantom: PremiaClient;
     private premiaMainnet: PremiaClient;
-    private lyra: LyraClient;
 
+    // Additional fee to include in spread calculations as
+    // a naive way to account for various fees (eg., gas fees)
     private additionalSpread: BigNumber;
 
     // Discord client
@@ -31,7 +33,8 @@ export default class Optionatoor {
         this.additionalSpread = utils.parseUnits(additionalSpread);
         console.log(`Using $${additionalSpread} additional in spread checks.`);
 
-        // Setup AMM clients
+        // Setup market clients
+        this.lyra = new LyraClient();
         this.premiaArbitrum = new PremiaClient(
             'Arbitrum',
             config.get('ARBITRUM_NODE_API_URL'),
@@ -59,7 +62,6 @@ export default class Optionatoor {
             config.get('MAINNET_ORACLE_WBTC'),
             config.get('MAINNET_ORACLE_WETH')
         );
-        this.lyra = new LyraClient();
 
         // Setup Discord client
         this.discordClient = new DiscordService();
@@ -78,6 +80,98 @@ export default class Optionatoor {
         this.isInitialized = true;
     }
 
+    private potentiallySet(
+        o: IOption,
+        map: Map<string, IOption>,
+        isBuy: boolean
+    ): void {
+        const existing = map.get(o.asset);
+        if (!existing) map.set(o.asset, o);
+        else {
+            // Replace if current offer is better than what's set.
+            // For sells, we want the higher premium, for buys we
+            // want the lower premium.
+            if (
+                (isBuy && o.premium.lt(existing.premium)) ||
+                (!isBuy && o.premium.gt(existing.premium))
+            ) {
+                map.set(o.asset, o);
+            }
+        }
+    }
+
+    private async getSells(): Promise<Map<string, IOption>> {
+        const sells = new Map<string, IOption>();
+
+        console.log('\x1b[1mGetting Lyra sells...\x1b[0m');
+        const lyraSellOptions = await this.lyra.getOptions(false);
+        for (let o of lyraSellOptions) {
+            this.potentiallySet(o, sells, false);
+        }
+
+        return sells;
+    }
+
+    private async getBuys(
+        sells: Map<string, IOption>
+    ): Promise<Map<string, IOption>> {
+        const buys = new Map<string, IOption>();
+
+        console.log('\x1b[1mGetting Lyra buys...\x1b[0m');
+        const lyraBuyOptions = await this.lyra.getOptions(true);
+        for (let o of lyraBuyOptions) {
+            // While getting buys, match immediately with a sell.
+            // If no sell exists, no point in keeping the buy around.
+            if (!sells.has(o.asset)) continue;
+            this.potentiallySet(o, buys, true);
+        }
+
+        console.log('\x1b[1mGetting Premia (Mainnet) buys...\x1b[0m');
+        const premiaMainnetOptions = await this.premiaMainnet.getOptions(true);
+        for (let o of premiaMainnetOptions) {
+            // While getting buys, match immediately with a sell.
+            // If no sell exists, no point in keeping the buy around.
+            if (!sells.has(o.asset)) continue;
+            this.potentiallySet(o, buys, true);
+        }
+
+        try {
+            console.log('\x1b[1mGetting Premia (Fantom) buys...\x1b[0m');
+            const premiaFantomOptions = await this.premiaFantom.getOptions(
+                true
+            );
+            for (let o of premiaFantomOptions) {
+                // While getting buys, match immediately with a sell.
+                // If no sell exists, no point in keeping the buy around.
+                if (!sells.has(o.asset)) continue;
+                this.potentiallySet(o, buys, true);
+            }
+        } catch (e) {
+            // Fantom RPCs can also be a pita.
+            console.log(`Failed to fetch options from Premia Fantom: ${e}`);
+        }
+
+        try {
+            console.log('\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m');
+            const premiaArbitrumOptions = await this.premiaArbitrum.getOptions(
+                true
+            );
+            for (let o of premiaArbitrumOptions) {
+                // While getting buys, match immediately with a sell.
+                // If no sell exists, no point in keeping the buy around.
+                if (!sells.has(o.asset)) continue;
+                this.potentiallySet(o, buys, true);
+            }
+        } catch (e) {
+            // Arbitrum has been a problematic RPC and there is no
+            // reason not to do an arb check only with the rest of
+            // the networks.
+            console.log(`Failed to fetch options from Premia Arbitrum: ${e}`);
+        }
+
+        return buys;
+    }
+
     public async run(): Promise<void> {
         if (!this.isInitialized)
             throw Error('uninitialized: did you run init()?');
@@ -85,76 +179,8 @@ export default class Optionatoor {
         while (true) {
             try {
                 console.log('Initiating a search...');
-                const buys = new Map<string, IOption>();
-                const sells = new Map<string, IOption>();
-
-                // Get sells first, then buys and make sure
-                // to keep only buys for sells that exist.
-
-                console.log('\x1b[1mGetting Lyra sells...\x1b[0m');
-                const lyraSellOptions = await this.lyra.getOptions();
-                for (let o of lyraSellOptions) {
-                    this.potentiallySet(o, sells, false);
-                }
-
-                console.log('\x1b[1mGetting Lyra buys...\x1b[0m');
-                const lyraBuyOptions = await this.lyra.getOptions(true);
-                for (let o of lyraBuyOptions) {
-                    // While getting buys, match immediately with a sell.
-                    // If no sell exists, no point in keeping the buy around.
-                    if (!sells.has(o.asset)) continue;
-                    this.potentiallySet(o, buys, true);
-                }
-
-                console.log('\x1b[1mGetting Premia (Mainnet) buys...\x1b[0m');
-                const premiaMainnetOptions =
-                    await this.premiaMainnet.getOptions();
-                for (let o of premiaMainnetOptions) {
-                    // While getting buys, match immediately with a sell.
-                    // If no sell exists, no point in keeping the buy around.
-                    if (!sells.has(o.asset)) continue;
-                    this.potentiallySet(o, buys, true);
-                }
-
-                try {
-                    console.log(
-                        '\x1b[1mGetting Premia (Fantom) buys...\x1b[0m'
-                    );
-                    const premiaFantomOptions =
-                        await this.premiaFantom.getOptions();
-                    for (let o of premiaFantomOptions) {
-                        // While getting buys, match immediately with a sell.
-                        // If no sell exists, no point in keeping the buy around.
-                        if (!sells.has(o.asset)) continue;
-                        this.potentiallySet(o, buys, true);
-                    }
-                } catch (e) {
-                    // Fantom RPCs can also be a pita.
-                    console.log(
-                        `Failed to fetch options from Premia Fantom: ${e}`
-                    );
-                }
-
-                try {
-                    console.log(
-                        '\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m'
-                    );
-                    const premiaArbitrumOptions =
-                        await this.premiaArbitrum.getOptions();
-                    for (let o of premiaArbitrumOptions) {
-                        // While getting buys, match immediately with a sell.
-                        // If no sell exists, no point in keeping the buy around.
-                        if (!sells.has(o.asset)) continue;
-                        this.potentiallySet(o, buys, true);
-                    }
-                } catch (e) {
-                    // Arbitrum has been a problematic RPC and there is no
-                    // reason not to do an arb check only with the rest of
-                    // the networks.
-                    console.log(
-                        `Failed to fetch options from Premia Arbitrum: ${e}`
-                    );
-                }
+                const sells = await this.getSells();
+                const buys = await this.getBuys(sells);
 
                 // Look for arbitrage opportunities in the spreads
                 for (const [asset, buy] of buys.entries()) {
@@ -185,26 +211,6 @@ export default class Optionatoor {
                 console.log(`Failed to check for arbitrage: ${e}`);
             } finally {
                 await sleep(config.get<number>('CHECK_INTERVAL_SECONDS'));
-            }
-        }
-    }
-
-    private potentiallySet(
-        o: IOption,
-        map: Map<string, IOption>,
-        isBuy: boolean
-    ): void {
-        const existing = map.get(o.asset);
-        if (!existing) map.set(o.asset, o);
-        else {
-            // Replace if current offer is better than what's set.
-            // For sells, we want the higher premium, for buys we
-            // want the lower premium.
-            if (
-                (isBuy && o.premium.lt(existing.premium)) ||
-                (!isBuy && o.premium.gt(existing.premium))
-            ) {
-                map.set(o.asset, o);
             }
         }
     }

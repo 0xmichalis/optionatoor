@@ -88,7 +88,8 @@ class PremiaClient {
         return resp.data;
     }
 
-    async getOptions(): Promise<IOption[]> {
+    // Note that Premia currently supports only buying
+    async getOptions(isBuy: boolean): Promise<IOption[]> {
         if (!this.isInitialized)
             throw Error('uninitialized: did you run init()?');
 
@@ -188,7 +189,7 @@ class PremiaClient {
                 asset: oKey(asset, o.maturity * 1000, strike, optionType),
                 market: `Premia (${this.network})`,
                 link: this.marketLink,
-                isBuy: true, // Premia currently supports only buying
+                isBuy,
                 contractSize,
                 premium,
             });
