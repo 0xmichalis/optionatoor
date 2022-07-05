@@ -1,8 +1,8 @@
 import { utils, BigNumber } from 'ethers';
 
 import { config } from './config';
-import LyraService from './markets/lyra';
-import PremiaService from './markets/premia';
+import LyraClient from './markets/lyra';
+import PremiaClient from './markets/premia';
 import DiscordService from './services/discord';
 import { IOption, oKey } from './types/option';
 import { arbitrageMessage, sleep } from './utils/utils';
@@ -12,10 +12,10 @@ export default class Optionatoor {
     private isInitialized: boolean = false;
 
     // AMMs
-    private premiaArbitrum: PremiaService;
-    private premiaFantom: PremiaService;
-    private premiaMainnet: PremiaService;
-    private lyra: LyraService;
+    private premiaArbitrum: PremiaClient;
+    private premiaFantom: PremiaClient;
+    private premiaMainnet: PremiaClient;
+    private lyra: LyraClient;
 
     private additionalSpread: BigNumber;
 
@@ -32,7 +32,7 @@ export default class Optionatoor {
         console.log(`Using $${additionalSpread} additional in spread checks.`);
 
         // Setup AMM clients
-        this.premiaArbitrum = new PremiaService(
+        this.premiaArbitrum = new PremiaClient(
             'Arbitrum',
             config.get('ARBITRUM_NODE_API_URL'),
             config.get('PREMIA_ARBITRUM_SUBGRAPH_API_URL'),
@@ -41,7 +41,7 @@ export default class Optionatoor {
             config.get('ARBITRUM_ORACLE_WBTC'),
             config.get('ARBITRUM_ORACLE_WETH')
         );
-        this.premiaFantom = new PremiaService(
+        this.premiaFantom = new PremiaClient(
             'Fantom',
             config.get('FANTOM_NODE_API_URL'),
             config.get('PREMIA_FANTOM_SUBGRAPH_API_URL'),
@@ -50,7 +50,7 @@ export default class Optionatoor {
             config.get('FANTOM_ORACLE_WBTC'),
             config.get('FANTOM_ORACLE_WETH')
         );
-        this.premiaMainnet = new PremiaService(
+        this.premiaMainnet = new PremiaClient(
             'Mainnet',
             config.get('MAINNET_NODE_API_URL'),
             config.get('PREMIA_MAINNET_SUBGRAPH_API_URL'),
@@ -59,7 +59,7 @@ export default class Optionatoor {
             config.get('MAINNET_ORACLE_WBTC'),
             config.get('MAINNET_ORACLE_WETH')
         );
-        this.lyra = new LyraService();
+        this.lyra = new LyraClient();
 
         // Setup Discord client
         this.discordClient = new DiscordService();

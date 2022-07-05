@@ -11,10 +11,10 @@ import { IOption } from '../../types/option';
 
 type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet';
 
-class PremiaService {
+class PremiaClient {
     // Whether the class is initialized
     private isInitialized: boolean = false;
-    private dappLink = 'https://app.premia.finance';
+    private marketLink = 'https://app.premia.finance';
 
     // RPC providers
     private network: SupportedNetwork;
@@ -187,7 +187,7 @@ class PremiaService {
 
             options.push({
                 market: `Premia (${this.network})`,
-                link: this.dappLink,
+                link: this.marketLink,
                 optionType: o.optionType,
                 isBuy: true,
                 asset,
@@ -204,4 +204,4 @@ class PremiaService {
     }
 }
 
-export default PremiaService;
+export default PremiaClient;

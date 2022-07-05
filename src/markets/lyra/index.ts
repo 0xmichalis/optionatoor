@@ -4,9 +4,9 @@ import { BigNumber, utils } from 'ethers';
 import { config } from '../../config';
 import { IOption } from '../../types/option';
 
-class LyraService {
+class LyraClient {
     private lyra: Lyra;
-    private dappLink = 'https://app.lyra.finance';
+    private marketLink = 'https://app.lyra.finance';
 
     // Contract sizes
     private btcContractSize: string;
@@ -51,7 +51,7 @@ class LyraService {
                     if (this.fromBigNumber(call.premium) != 0) {
                         options.push({
                             market: 'Lyra',
-                            link: this.dappLink,
+                            link: this.marketLink,
                             optionType: 'CALL',
                             isBuy,
                             asset: market.name,
@@ -66,7 +66,7 @@ class LyraService {
                     if (this.fromBigNumber(put.premium) != 0) {
                         options.push({
                             market: 'Lyra',
-                            link: this.dappLink,
+                            link: this.marketLink,
                             optionType: 'PUT',
                             isBuy,
                             asset: market.name,
@@ -84,4 +84,4 @@ class LyraService {
     }
 }
 
-export default LyraService;
+export default LyraClient;
