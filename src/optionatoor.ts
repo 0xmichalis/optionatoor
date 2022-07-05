@@ -4,7 +4,7 @@ import { config } from './config';
 import LyraClient from './markets/lyra';
 import PremiaClient from './markets/premia';
 import DiscordService from './services/discord';
-import { IOption, oKey } from './types/option';
+import { IOption } from './types/option';
 import { arbitrageMessage, sleep } from './utils/utils';
 
 export default class Optionatoor {
@@ -102,7 +102,7 @@ export default class Optionatoor {
                 for (let o of lyraBuyOptions) {
                     // While getting buys, match immediately with a sell.
                     // If no sell exists, no point in keeping the buy around.
-                    if (!sells.has(oKey(o))) continue;
+                    if (!sells.has(o.asset)) continue;
                     this.potentiallySet(o, buys, true);
                 }
 
@@ -112,7 +112,7 @@ export default class Optionatoor {
                 for (let o of premiaMainnetOptions) {
                     // While getting buys, match immediately with a sell.
                     // If no sell exists, no point in keeping the buy around.
-                    if (!sells.has(oKey(o))) continue;
+                    if (!sells.has(o.asset)) continue;
                     this.potentiallySet(o, buys, true);
                 }
 
@@ -125,7 +125,7 @@ export default class Optionatoor {
                     for (let o of premiaFantomOptions) {
                         // While getting buys, match immediately with a sell.
                         // If no sell exists, no point in keeping the buy around.
-                        if (!sells.has(oKey(o))) continue;
+                        if (!sells.has(o.asset)) continue;
                         this.potentiallySet(o, buys, true);
                     }
                 } catch (e) {
@@ -144,7 +144,7 @@ export default class Optionatoor {
                     for (let o of premiaArbitrumOptions) {
                         // While getting buys, match immediately with a sell.
                         // If no sell exists, no point in keeping the buy around.
-                        if (!sells.has(oKey(o))) continue;
+                        if (!sells.has(o.asset)) continue;
                         this.potentiallySet(o, buys, true);
                     }
                 } catch (e) {
@@ -157,8 +157,8 @@ export default class Optionatoor {
                 }
 
                 // Look for arbitrage opportunities in the spreads
-                for (const [key, buy] of buys.entries()) {
-                    const sell = sells.get(key);
+                for (const [asset, buy] of buys.entries()) {
+                    const sell = sells.get(asset);
                     // This should never happen because we were already
                     // matching buys with sells that exist above.
                     if (!sell) throw new Error('this is not fair');
@@ -167,7 +167,7 @@ export default class Optionatoor {
                         sell.premium.gt(buy.premium.add(this.additionalSpread))
                     ) {
                         const msg = arbitrageMessage(
-                            key,
+                            asset,
                             sell.contractSize,
                             buy.market,
                             buy.link,
@@ -194,9 +194,8 @@ export default class Optionatoor {
         map: Map<string, IOption>,
         isBuy: boolean
     ): void {
-        const key = oKey(o);
-        const existing = map.get(key);
-        if (!existing) map.set(key, o);
+        const existing = map.get(o.asset);
+        if (!existing) map.set(o.asset, o);
         else {
             // Replace if current offer is better than what's set.
             // For sells, we want the higher premium, for buys we
@@ -205,7 +204,7 @@ export default class Optionatoor {
                 (isBuy && o.premium.lt(existing.premium)) ||
                 (!isBuy && o.premium.gt(existing.premium))
             ) {
-                map.set(key, o);
+                map.set(o.asset, o);
             }
         }
     }

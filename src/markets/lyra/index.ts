@@ -2,7 +2,7 @@ import Lyra from '@lyrafinance/lyra-js';
 import { BigNumber, utils } from 'ethers';
 
 import { config } from '../../config';
-import { IOption } from '../../types/option';
+import { IOption, oKey } from '../../types/option';
 
 class LyraClient {
     private lyra: Lyra;
@@ -50,13 +50,15 @@ class LyraClient {
                     const call = await strike.quote(true, isBuy, contractSize);
                     if (this.fromBigNumber(call.premium) != 0) {
                         options.push({
+                            asset: oKey(
+                                market.name,
+                                board.expiryTimestamp * 1000,
+                                strike.strikePrice,
+                                'C'
+                            ),
                             market: 'Lyra',
                             link: this.marketLink,
-                            optionType: 'C',
                             isBuy,
-                            asset: market.name,
-                            maturity: board.expiryTimestamp * 1000,
-                            strike: strike.strikePrice,
                             contractSize: utils.formatUnits(call.size),
                             premium: call.premium, // Premium returned in sUSD
                         });
@@ -65,13 +67,15 @@ class LyraClient {
                     const put = await strike.quote(false, isBuy, contractSize);
                     if (this.fromBigNumber(put.premium) != 0) {
                         options.push({
+                            asset: oKey(
+                                market.name,
+                                board.expiryTimestamp * 1000,
+                                strike.strikePrice,
+                                'P'
+                            ),
                             market: 'Lyra',
                             link: this.marketLink,
-                            optionType: 'P',
                             isBuy,
-                            asset: market.name,
-                            maturity: board.expiryTimestamp * 1000,
-                            strike: strike.strikePrice,
                             contractSize: utils.formatUnits(put.size),
                             premium: put.premium, // Premium returned in sUSD
                         });

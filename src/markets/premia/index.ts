@@ -7,7 +7,7 @@ import {
 import GraphService from '../../services/graph';
 import { config } from '../../config';
 import { getOptionsQuery } from './queries';
-import { IOption } from '../../types/option';
+import { IOption, oKey } from '../../types/option';
 
 type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet';
 
@@ -182,14 +182,13 @@ class PremiaClient {
                 premium = premium.mul(price).div(1e8);
             }
 
+            const strike = this.bn64x64ToBn(BigNumber.from(o.strike64x64));
+            const optionType = o.optionType == 'CALL' ? 'C' : 'P';
             options.push({
+                asset: oKey(asset, o.maturity * 1000, strike, optionType),
                 market: `Premia (${this.network})`,
                 link: this.marketLink,
-                optionType: o.optionType == 'CALL' ? 'C' : 'P',
                 isBuy: true,
-                asset,
-                maturity: o.maturity * 1000,
-                strike: this.bn64x64ToBn(BigNumber.from(o.strike64x64)),
                 contractSize,
                 premium,
             });
