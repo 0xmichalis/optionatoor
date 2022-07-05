@@ -113,27 +113,19 @@ export default class Optionatoor {
         return sells;
     }
 
-    private async getBuys(
-        sells: Map<string, IOption>
-    ): Promise<Map<string, IOption>> {
+    private async getBuys(): Promise<Map<string, IOption>> {
         const buys = new Map<string, IOption>();
         const isBuy = true;
 
         console.log('\x1b[1mGetting Lyra buys...\x1b[0m');
         const lyraBuyOptions = await this.lyra.getOptions(isBuy);
         for (let o of lyraBuyOptions) {
-            // While getting buys, match immediately with a sell.
-            // If no sell exists, no point in keeping the buy around.
-            if (!sells.has(o.asset)) continue;
             this.potentiallySet(o, buys, isBuy);
         }
 
         console.log('\x1b[1mGetting Premia (Mainnet) buys...\x1b[0m');
         const premiaMainnetOptions = await this.premiaMainnet.getOptions(isBuy);
         for (let o of premiaMainnetOptions) {
-            // While getting buys, match immediately with a sell.
-            // If no sell exists, no point in keeping the buy around.
-            if (!sells.has(o.asset)) continue;
             this.potentiallySet(o, buys, isBuy);
         }
 
@@ -143,9 +135,6 @@ export default class Optionatoor {
                 isBuy
             );
             for (let o of premiaFantomOptions) {
-                // While getting buys, match immediately with a sell.
-                // If no sell exists, no point in keeping the buy around.
-                if (!sells.has(o.asset)) continue;
                 this.potentiallySet(o, buys, isBuy);
             }
         } catch (e) {
@@ -158,9 +147,6 @@ export default class Optionatoor {
                 isBuy
             );
             for (let o of premiaArbitrumOptions) {
-                // While getting buys, match immediately with a sell.
-                // If no sell exists, no point in keeping the buy around.
-                if (!sells.has(o.asset)) continue;
                 this.potentiallySet(o, buys, isBuy);
             }
         } catch (e) {
@@ -181,14 +167,12 @@ export default class Optionatoor {
             try {
                 console.log('Initiating a search...');
                 const sells = await this.getSells();
-                const buys = await this.getBuys(sells);
+                const buys = await this.getBuys();
 
                 // Look for arbitrage opportunities in the spreads
                 for (const [asset, buy] of buys.entries()) {
                     const sell = sells.get(asset);
-                    // This should never happen because we were already
-                    // matching buys with sells that exist above.
-                    if (!sell) throw new Error('this is not fair');
+                    if (!sell) continue;
 
                     if (
                         sell.premium.gt(buy.premium.add(this.additionalSpread))
