@@ -25,9 +25,7 @@ export default class Optionatoor {
     private discordClient: DiscordService;
 
     constructor() {
-        const additionalSpread = config
-            .get<number>('ADDITIONAL_SPREAD_USD')
-            .toString();
+        const additionalSpread = config.get<number>('ADDITIONAL_SPREAD_USD').toString();
         // Parsing to 18 decimals since it is used with 18-decimal premiums
         // to calculate whether an arbitrage exists
         this.additionalSpread = utils.parseUnits(additionalSpread);
@@ -80,11 +78,7 @@ export default class Optionatoor {
         this.isInitialized = true;
     }
 
-    private potentiallySet(
-        o: IOption,
-        map: Map<string, IOption>,
-        isBuy: boolean
-    ): void {
+    private potentiallySet(o: IOption, map: Map<string, IOption>, isBuy: boolean): void {
         const existing = map.get(o.asset);
         if (!existing) map.set(o.asset, o);
         else {
@@ -131,9 +125,7 @@ export default class Optionatoor {
 
         try {
             console.log('\x1b[1mGetting Premia (Fantom) buys...\x1b[0m');
-            const premiaFantomOptions = await this.premiaFantom.getOptions(
-                isBuy
-            );
+            const premiaFantomOptions = await this.premiaFantom.getOptions(isBuy);
             for (let o of premiaFantomOptions) {
                 this.potentiallySet(o, buys, isBuy);
             }
@@ -143,9 +135,7 @@ export default class Optionatoor {
 
         try {
             console.log('\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m');
-            const premiaArbitrumOptions = await this.premiaArbitrum.getOptions(
-                isBuy
-            );
+            const premiaArbitrumOptions = await this.premiaArbitrum.getOptions(isBuy);
             for (let o of premiaArbitrumOptions) {
                 this.potentiallySet(o, buys, isBuy);
             }
@@ -160,8 +150,7 @@ export default class Optionatoor {
     }
 
     public async run(): Promise<void> {
-        if (!this.isInitialized)
-            throw Error('uninitialized: did you run init()?');
+        if (!this.isInitialized) throw Error('uninitialized: did you run init()?');
 
         while (true) {
             try {
@@ -174,9 +163,7 @@ export default class Optionatoor {
                     const sell = sells.get(asset);
                     if (!sell) continue;
 
-                    if (
-                        sell.premium.gt(buy.premium.add(this.additionalSpread))
-                    ) {
+                    if (sell.premium.gt(buy.premium.add(this.additionalSpread))) {
                         const msg = arbitrageMessage(
                             asset,
                             sell.contractSize,

@@ -26,9 +26,9 @@ export const oKey = (
     return (
         asset +
         '-' +
-        `${m.getUTCDate()}${m
-            .toLocaleString('default', { month: 'short' })
-            .toUpperCase()}${m.getFullYear() - 2000}` +
+        `${m.getUTCDate()}${m.toLocaleString('default', { month: 'short' }).toUpperCase()}${
+            m.getFullYear() - 2000
+        }` +
         '-' +
         utils.formatUnits(strike).replace('.0', '') +
         '-' +

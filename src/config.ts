@@ -15,10 +15,7 @@ const schema: Joi.ObjectSchema = Joi.object({
     CONTRACT_SIZE_ETH: Joi.string().optional().default('1'),
     DISCORD_BOT_TOKEN: Joi.string().optional().allow(''),
     DISCORD_CHANNEL_ID: Joi.string().optional().allow(''),
-    FANTOM_NODE_API_URL: Joi.string()
-        .uri()
-        .optional()
-        .default('https://rpc.ftm.tools/'),
+    FANTOM_NODE_API_URL: Joi.string().uri().optional().default('https://rpc.ftm.tools/'),
     FANTOM_ORACLE_WBTC: Joi.string()
         .optional()
         .default('0x8e94c22142f4a64b99022ccdd994f4e9ec86e4b4'),
@@ -41,9 +38,7 @@ const schema: Joi.ObjectSchema = Joi.object({
     PREMIA_ARBITRUM_SUBGRAPH_API_URL: Joi.string()
         .uri()
         .optional()
-        .default(
-            'https://api.thegraph.com/subgraphs/name/premiafinance/premia-arbitrum'
-        ),
+        .default('https://api.thegraph.com/subgraphs/name/premiafinance/premia-arbitrum'),
     PREMIA_FANTOM_POOL_WBTC: Joi.string()
         .optional()
         .default('0x3a098984f1c3ecBAb0D5866F35438Ec0db3ec8C2'),
@@ -53,9 +48,7 @@ const schema: Joi.ObjectSchema = Joi.object({
     PREMIA_FANTOM_SUBGRAPH_API_URL: Joi.string()
         .uri()
         .optional()
-        .default(
-            'https://api.thegraph.com/subgraphs/name/premiafinance/premia-fantom'
-        ),
+        .default('https://api.thegraph.com/subgraphs/name/premiafinance/premia-fantom'),
     PREMIA_MAINNET_POOL_WBTC: Joi.string()
         .optional()
         .default('0x1B63334f7bfDf0D753AB3101EB6d02B278db8852'),
@@ -65,9 +58,7 @@ const schema: Joi.ObjectSchema = Joi.object({
     PREMIA_MAINNET_SUBGRAPH_API_URL: Joi.string()
         .uri()
         .optional()
-        .default(
-            'https://api.thegraph.com/subgraphs/name/premiafinance/premiav2'
-        ),
+        .default('https://api.thegraph.com/subgraphs/name/premiafinance/premiav2'),
 });
 
 export class ConfigService {
@@ -87,10 +78,8 @@ export class ConfigService {
 
         // Custom validation
         if (
-            (process.env['DISCORD_BOT_TOKEN'] &&
-                !process.env['DISCORD_CHANNEL_ID']) ||
-            (process.env['DISCORD_CHANNEL_ID'] &&
-                !process.env['DISCORD_BOT_TOKEN'])
+            (process.env['DISCORD_BOT_TOKEN'] && !process.env['DISCORD_CHANNEL_ID']) ||
+            (process.env['DISCORD_CHANNEL_ID'] && !process.env['DISCORD_BOT_TOKEN'])
         ) {
             throw new Error(
                 'DISCORD_BOT_TOKEN and DISCORD_CHANNEL_ID need to be specified together'

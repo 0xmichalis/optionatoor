@@ -1,8 +1,5 @@
 import { BigNumber, providers, utils } from 'ethers';
-import {
-    Contract as MulticallContract,
-    Provider as MulticallProvider,
-} from 'ethers-multicall';
+import { Contract as MulticallContract, Provider as MulticallProvider } from 'ethers-multicall';
 
 import GraphService from '../../services/graph';
 import { config } from '../../config';
@@ -65,9 +62,7 @@ class PremiaClient {
         this.wbtcPool = new MulticallContract(btcPool, poolAbi);
         this.wethPool = new MulticallContract(ethPool, poolAbi);
 
-        const oracleAbi = [
-            'function latestAnswer() external view returns (uint256)',
-        ];
+        const oracleAbi = ['function latestAnswer() external view returns (uint256)'];
         this.wbtcOracle = new MulticallContract(btcOracle, oracleAbi);
         this.wethOracle = new MulticallContract(ethOracle, oracleAbi);
     }
@@ -90,20 +85,14 @@ class PremiaClient {
 
     // Note that Premia currently supports only buying
     async getOptions(isBuy: boolean): Promise<IOption[]> {
-        if (!this.isInitialized)
-            throw Error('uninitialized: did you run init()?');
+        if (!this.isInitialized) throw Error('uninitialized: did you run init()?');
 
         // Fetch oracle prices to estimate premium size in USD
         // for calls as they are denominated in the underlying.
-        const oracleCalls = [
-            this.wbtcOracle.latestAnswer(),
-            this.wethOracle.latestAnswer(),
-        ];
+        const oracleCalls = [this.wbtcOracle.latestAnswer(), this.wethOracle.latestAnswer()];
 
         console.log(`Calling oracles`);
-        const [wbtcPrice, wethPrice] = await this.multicallProvider.all(
-            oracleCalls
-        );
+        const [wbtcPrice, wethPrice] = await this.multicallProvider.all(oracleCalls);
 
         console.log(`Getting options from subgraph`);
         const requests = [];
