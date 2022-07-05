@@ -52,7 +52,7 @@ class LyraClient {
                         options.push({
                             market: 'Lyra',
                             link: this.marketLink,
-                            optionType: 'CALL',
+                            optionType: 'C',
                             isBuy,
                             asset: market.name,
                             maturity: board.expiryTimestamp * 1000,
@@ -67,7 +67,7 @@ class LyraClient {
                         options.push({
                             market: 'Lyra',
                             link: this.marketLink,
-                            optionType: 'PUT',
+                            optionType: 'P',
                             isBuy,
                             asset: market.name,
                             maturity: board.expiryTimestamp * 1000,

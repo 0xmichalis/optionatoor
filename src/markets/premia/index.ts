@@ -185,7 +185,7 @@ class PremiaClient {
             options.push({
                 market: `Premia (${this.network})`,
                 link: this.marketLink,
-                optionType: o.optionType,
+                optionType: o.optionType == 'CALL' ? 'C' : 'P',
                 isBuy: true,
                 asset,
                 maturity: o.maturity * 1000,
