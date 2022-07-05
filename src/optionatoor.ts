@@ -102,11 +102,12 @@ export default class Optionatoor {
 
     private async getSells(): Promise<Map<string, IOption>> {
         const sells = new Map<string, IOption>();
+        const isBuy = false;
 
         console.log('\x1b[1mGetting Lyra sells...\x1b[0m');
-        const lyraSellOptions = await this.lyra.getOptions(false);
+        const lyraSellOptions = await this.lyra.getOptions(isBuy);
         for (let o of lyraSellOptions) {
-            this.potentiallySet(o, sells, false);
+            this.potentiallySet(o, sells, isBuy);
         }
 
         return sells;
@@ -116,51 +117,51 @@ export default class Optionatoor {
         sells: Map<string, IOption>
     ): Promise<Map<string, IOption>> {
         const buys = new Map<string, IOption>();
+        const isBuy = true;
 
         console.log('\x1b[1mGetting Lyra buys...\x1b[0m');
-        const lyraBuyOptions = await this.lyra.getOptions(true);
+        const lyraBuyOptions = await this.lyra.getOptions(isBuy);
         for (let o of lyraBuyOptions) {
             // While getting buys, match immediately with a sell.
             // If no sell exists, no point in keeping the buy around.
             if (!sells.has(o.asset)) continue;
-            this.potentiallySet(o, buys, true);
+            this.potentiallySet(o, buys, isBuy);
         }
 
         console.log('\x1b[1mGetting Premia (Mainnet) buys...\x1b[0m');
-        const premiaMainnetOptions = await this.premiaMainnet.getOptions(true);
+        const premiaMainnetOptions = await this.premiaMainnet.getOptions(isBuy);
         for (let o of premiaMainnetOptions) {
             // While getting buys, match immediately with a sell.
             // If no sell exists, no point in keeping the buy around.
             if (!sells.has(o.asset)) continue;
-            this.potentiallySet(o, buys, true);
+            this.potentiallySet(o, buys, isBuy);
         }
 
         try {
             console.log('\x1b[1mGetting Premia (Fantom) buys...\x1b[0m');
             const premiaFantomOptions = await this.premiaFantom.getOptions(
-                true
+                isBuy
             );
             for (let o of premiaFantomOptions) {
                 // While getting buys, match immediately with a sell.
                 // If no sell exists, no point in keeping the buy around.
                 if (!sells.has(o.asset)) continue;
-                this.potentiallySet(o, buys, true);
+                this.potentiallySet(o, buys, isBuy);
             }
         } catch (e) {
-            // Fantom RPCs can also be a pita.
             console.log(`Failed to fetch options from Premia Fantom: ${e}`);
         }
 
         try {
             console.log('\x1b[1mGetting Premia (Arbitrum) buys...\x1b[0m');
             const premiaArbitrumOptions = await this.premiaArbitrum.getOptions(
-                true
+                isBuy
             );
             for (let o of premiaArbitrumOptions) {
                 // While getting buys, match immediately with a sell.
                 // If no sell exists, no point in keeping the buy around.
                 if (!sells.has(o.asset)) continue;
-                this.potentiallySet(o, buys, true);
+                this.potentiallySet(o, buys, isBuy);
             }
         } catch (e) {
             // Arbitrum has been a problematic RPC and there is no
