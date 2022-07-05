@@ -188,7 +188,7 @@ class PremiaClient {
                 asset: oKey(asset, o.maturity * 1000, strike, optionType),
                 market: `Premia (${this.network})`,
                 link: this.marketLink,
-                isBuy: true,
+                isBuy: true, // Premia currently supports only buying
                 contractSize,
                 premium,
             });
