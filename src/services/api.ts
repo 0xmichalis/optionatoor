@@ -10,16 +10,6 @@ const ApiService = {
     post(url: string, data: any): Promise<AxiosResponse> {
         return axios.post(url, data);
     },
-    graphql(
-        url: string,
-        query: string,
-        variables = {}
-    ): Promise<AxiosResponse> {
-        return axios.post(url, {
-            query,
-            variables,
-        });
-    },
 };
 
 export default ApiService;

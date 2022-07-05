@@ -4,7 +4,7 @@ import {
     Provider as MulticallProvider,
 } from 'ethers-multicall';
 
-import ApiService from '../../services/api';
+import GraphService from '../../services/graph';
 import { config } from '../../config';
 import { getOptionsQuery } from './queries';
 import { IOption } from '../../types/option';
@@ -20,7 +20,7 @@ class PremiaClient {
     private network: SupportedNetwork;
     private provider: providers.StaticJsonRpcProvider;
     private multicallProvider: MulticallProvider;
-    private subgraphURL: string;
+    private graphClient: GraphService;
 
     private allowedPairs = ['WBTC/DAI', 'WETH/DAI'];
 
@@ -53,7 +53,7 @@ class PremiaClient {
         this.network = network;
         this.provider = new providers.StaticJsonRpcProvider(providerURL);
         this.multicallProvider = new MulticallProvider(this.provider);
-        this.subgraphURL = subgraphURL;
+        this.graphClient = new GraphService(subgraphURL);
 
         this.wbtcContractSize = config.get('CONTRACT_SIZE_BTC');
         this.wethContractSize = config.get('CONTRACT_SIZE_ETH');
@@ -84,10 +84,7 @@ class PremiaClient {
 
     private async getOptionsFromSubgraph(): Promise<any> {
         const tomorrow = Math.floor(Date.now() / 1000) + 86400;
-        const resp = await ApiService.graphql(
-            this.subgraphURL,
-            getOptionsQuery(tomorrow)
-        );
+        const resp = await this.graphClient.do(getOptionsQuery(tomorrow));
         return resp.data;
     }
 
