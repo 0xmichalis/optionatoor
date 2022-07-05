@@ -3,15 +3,15 @@ import { Client, Intents, TextChannel, ThreadChannel } from 'discord.js';
 import { sleep } from '../utils/utils';
 
 class DiscordService {
-    private discordChannel: TextChannel | ThreadChannel | undefined;
-    private discordClient: Client;
+    private channel: TextChannel | ThreadChannel | undefined;
+    private client: Client;
 
     constructor() {
-        this.discordClient = new Client({ intents: [Intents.FLAGS.GUILDS] });
+        this.client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
         // Handle shutdown gracefully
         const terminate = () => {
-            this.discordClient.destroy();
+            this.client.destroy();
             console.log('Discord client shutdown.');
             process.exit(0);
         };
@@ -21,28 +21,28 @@ class DiscordService {
 
     async init(token: string, channelID: string): Promise<void> {
         console.log(`Discord token found. Logging into Discord channel ${channelID}...`);
-        await this.discordClient.login(token);
-        while (!this.discordClient.isReady()) {
+        await this.client.login(token);
+        while (!this.client.isReady()) {
             console.log('Waiting for Discord client to initialize...');
             await sleep(5);
         }
 
-        const channel = await this.discordClient.channels.fetch(channelID);
+        const channel = await this.client.channels.fetch(channelID);
         if (!channel) throw new Error(`Failed to connect to Discord channel ${channelID}`);
 
         if (channel.isThread()) {
             console.log(`Channel ${channelID} is a thread.`);
-            this.discordChannel = channel as ThreadChannel;
+            this.channel = channel as ThreadChannel;
         } else if (channel.isText()) {
             console.log(`Channel ${channelID} is text-based.`);
-            this.discordChannel = channel as TextChannel;
+            this.channel = channel as TextChannel;
         } else {
             throw new Error(`Channel ${channelID} is not text-based or a thread!`);
         }
     }
 
     async send(message: string): Promise<void> {
-        if (this.discordChannel) await this.discordChannel.send(message);
+        if (this.channel) await this.channel.send(message);
     }
 }
 
