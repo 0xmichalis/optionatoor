@@ -185,16 +185,22 @@ export default class Optionatoor {
                     const sell = sells.get(asset);
                     if (!sell) continue;
 
+                    const buyPremium = utils.formatUnits(buy.premium);
+                    const sellPremium = utils.formatUnits(sell.premium);
+                    console.log(
+                        `${asset}: Comparing best buy from ${buy.market} ($${buyPremium}) with best sell from ${sell.market} ($${sellPremium})`
+                    );
+
                     if (sell.premium.gt(buy.premium.add(this.additionalSpread))) {
                         const msg = arbitrageMessage(
                             asset,
                             sell.contractSize,
                             buy.market,
                             buy.link,
-                            utils.formatUnits(buy.premium),
+                            buyPremium,
                             sell.market,
                             sell.link,
-                            utils.formatUnits(sell.premium)
+                            sellPremium
                         );
                         console.log(msg);
                         await this.discordClient.send(msg);

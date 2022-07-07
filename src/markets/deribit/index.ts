@@ -83,11 +83,13 @@ class DeribitClient {
                 const wantedSize = Number(this.size(asset));
                 const buySize = Number(resp.data.result.best_ask_amount);
                 const sellSize = Number(resp.data.result.best_bid_amount);
+                const indexPrice = Number(resp.data.result.index_price);
 
                 // In the future, may want to traverse the orderbook to get
                 // the wanted size.
                 if (isBuy && buySize >= wantedSize) {
-                    const premium = Number(resp.data.result.best_ask_price) * wantedSize;
+                    const premium =
+                        Number(resp.data.result.best_ask_price) * wantedSize * indexPrice;
                     buys.push({
                         asset,
                         market: 'Deribit',
@@ -99,7 +101,8 @@ class DeribitClient {
                 }
 
                 if (isSell && sellSize >= wantedSize) {
-                    const premium = Number(resp.data.result.best_bid_price) * wantedSize;
+                    const premium =
+                        Number(resp.data.result.best_bid_price) * wantedSize * indexPrice;
                     sells.push({
                         asset,
                         market: 'Deribit',
