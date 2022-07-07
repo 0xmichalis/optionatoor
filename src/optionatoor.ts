@@ -1,6 +1,7 @@
 import { utils, BigNumber } from 'ethers';
 
 import { config } from './config';
+import DeribitClient from './markets/deribit';
 import LyraClient from './markets/lyra';
 import PremiaClient from './markets/premia';
 import DiscordService from './services/discord';
@@ -12,6 +13,7 @@ export default class Optionatoor {
     private isInitialized: boolean = false;
 
     // Market clients
+    private deribit: DeribitClient;
     private lyra: LyraClient;
     private premiaArbitrum: PremiaClient;
     private premiaFantom: PremiaClient;
@@ -32,6 +34,7 @@ export default class Optionatoor {
         console.log(`Using $${additionalSpread} additional in spread checks.`);
 
         // Setup market clients
+        this.deribit = new DeribitClient();
         this.lyra = new LyraClient();
         this.premiaArbitrum = new PremiaClient(
             'Arbitrum',
@@ -151,6 +154,20 @@ export default class Optionatoor {
         return buys;
     }
 
+    private async getDeribitOptions(
+        otherBuys: Map<string, IOption>,
+        otherSells: Map<string, IOption>
+    ): Promise<void> {
+        console.log('\x1b[1mGetting Deribit options...\x1b[0m');
+        const { buys, sells } = await this.deribit.getOptions(otherBuys, otherSells);
+        for (let o of buys) {
+            this.potentiallySet(o, otherBuys, false);
+        }
+        for (let o of sells) {
+            this.potentiallySet(o, otherSells, false);
+        }
+    }
+
     public async run(): Promise<void> {
         if (!this.isInitialized) throw Error('uninitialized: did you run init()?');
 
@@ -159,6 +176,9 @@ export default class Optionatoor {
                 console.log('Initiating a search...');
                 const sells = await this.getSells();
                 const buys = await this.getBuys();
+                // Match the sells and buys we have fetched from all around
+                // the place with Deribit
+                await this.getDeribitOptions(buys, sells);
 
                 // Look for arbitrage opportunities in the spreads
                 for (const [asset, buy] of buys.entries()) {

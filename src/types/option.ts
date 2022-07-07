@@ -11,7 +11,7 @@ export interface IOption {
     isBuy: boolean;
     // Contract size
     contractSize: string;
-    // Premium in USD
+    // Premium in USD - Formatted with 18 decimals
     premium: BigNumber;
 }
 
