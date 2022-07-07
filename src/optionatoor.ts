@@ -67,7 +67,9 @@ export default class Optionatoor {
 
     public async init(): Promise<void> {
         const discordToken = config.get<string>('DISCORD_BOT_TOKEN');
-        if (discordToken) {
+        if (!discordToken) {
+            console.log('Discord client is disabled.');
+        } else {
             const channelID = config.get<string>('DISCORD_CHANNEL_ID');
             await this.discordClient.init(discordToken, channelID);
         }
