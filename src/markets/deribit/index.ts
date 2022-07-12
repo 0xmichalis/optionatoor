@@ -10,7 +10,7 @@ interface DeribitOrderbook {
 }
 
 class DeribitClient {
-    private marketLink = 'https://www.deribit.com';
+    private marketLink = 'https://www.deribit.com/options/';
     private apiBaseURL = 'https://deribit.com/api/v2/';
 
     // Contract sizes
@@ -26,8 +26,16 @@ class DeribitClient {
         console.log(`Deribit client initialized.`);
     }
 
-    size(asset: string): string {
-        const currency = asset.split('-', 2)[0];
+    private currencyFromAsset(asset: string): string {
+        return asset.split('-', 2)[0];
+    }
+
+    private dateFromAsset(asset: string): string {
+        return asset.split('-', 2)[1];
+    }
+
+    private size(asset: string): string {
+        const currency = this.currencyFromAsset(asset);
         switch (currency) {
             case 'BTC':
                 return this.btcContractSize;
@@ -90,10 +98,13 @@ class DeribitClient {
                 if (isBuy && buySize >= wantedSize) {
                     const premium =
                         Number(resp.data.result.best_ask_price) * wantedSize * indexPrice;
+                    const currency = this.currencyFromAsset(asset);
+                    const date = this.dateFromAsset(asset);
+
                     buys.push({
                         asset,
                         market: 'Deribit',
-                        link: this.marketLink,
+                        link: this.marketLink + `${currency}/${currency}-${date}/${asset}`,
                         contractSize: this.size(asset),
                         premium: utils.parseUnits(String(premium.toFixed(18))),
                         isBuy: true,
@@ -103,10 +114,13 @@ class DeribitClient {
                 if (isSell && sellSize >= wantedSize) {
                     const premium =
                         Number(resp.data.result.best_bid_price) * wantedSize * indexPrice;
+                    const currency = this.currencyFromAsset(asset);
+                    const date = this.dateFromAsset(asset);
+
                     sells.push({
                         asset,
                         market: 'Deribit',
-                        link: this.marketLink,
+                        link: this.marketLink + `${currency}/${currency}-${date}/${asset}`,
                         contractSize: this.size(asset),
                         premium: utils.parseUnits(String(premium.toFixed(18))),
                         isBuy: false,
