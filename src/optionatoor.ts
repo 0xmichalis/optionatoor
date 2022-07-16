@@ -4,6 +4,7 @@ import { config } from './config';
 import DeribitClient from './markets/deribit';
 import LyraClient from './markets/lyra';
 import PremiaClient from './markets/premia';
+import ZetaClient from './markets/zeta';
 import DiscordService from './services/discord';
 import { IOption } from './types/option';
 import { arbitrageMessage, sleep } from './utils/utils';
@@ -19,6 +20,7 @@ export default class Optionatoor {
     private premiaFantom: PremiaClient;
     private premiaMainnet: PremiaClient;
     private premiaOptimism: PremiaClient;
+    private zeta: ZetaClient;
 
     // Additional fee to include in spread calculations as
     // a naive way to account for various fees (eg., gas fees)
@@ -73,6 +75,7 @@ export default class Optionatoor {
             config.get('OPTIMISM_ORACLE_WBTC'),
             config.get('OPTIMISM_ORACLE_WETH')
         );
+        this.zeta = new ZetaClient();
 
         // Setup Discord client
         this.discordClient = new DiscordService();
@@ -91,6 +94,7 @@ export default class Optionatoor {
         await this.premiaFantom.init();
         await this.premiaMainnet.init();
         await this.premiaOptimism.init();
+        await this.zeta.init();
         this.isInitialized = true;
     }
 

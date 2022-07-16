@@ -22,6 +22,8 @@
     },
     "dependencies": {
         "@lyrafinance/lyra-js": "^0.0.15",
+        "@solana/web3.js": "^1.48.0",
+        "@zetamarkets/sdk": "^0.14.4",
         "axios": "^0.26.1",
         "discord.js": "^13.8.0",
         "dotenv": "^10.0.0",

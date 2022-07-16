@@ -74,6 +74,11 @@ const schema: Joi.ObjectSchema = Joi.object({
         .uri()
         .optional()
         .default('https://api.thegraph.com/subgraphs/name/premiafinance/premia-optimism'),
+    SOLANA_NODE_API_URL: Joi.string()
+        .uri()
+        .optional()
+        .default('https://ssc-dao.genesysgo.net'),
+    ZETA_PROGRAM_ID: Joi.string().optional().default('ZETAxsqBRek56DhiGXrn75yj2NHU3aYUnxvHXpkf3aD'),
 });
 
 export class ConfigService {
