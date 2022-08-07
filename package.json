@@ -26,7 +26,7 @@
         "discord.js": "^13.8.0",
         "dotenv": "^10.0.0",
         "ethers": "^5.6.9",
-        "ethers-multicall": "^0.2.1",
+        "@kargakis/ethers-multicall": "^0.3.0",
         "joi": "^17.5.0"
     }
 }

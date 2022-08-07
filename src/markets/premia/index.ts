@@ -1,5 +1,8 @@
 import { BigNumber, providers, utils } from 'ethers';
-import { Contract as MulticallContract, Provider as MulticallProvider } from 'ethers-multicall';
+import {
+    Contract as MulticallContract,
+    Provider as MulticallProvider,
+} from '@kargakis/ethers-multicall';
 
 import GraphService from '../../services/graph';
 import { config } from '../../config';
