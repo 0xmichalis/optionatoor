@@ -103,7 +103,14 @@ export class ConfigService {
     }
 
     get<T>(key: string): T {
-        return process.env[key] || this.config[key];
+        try {
+            return process.env[key] || this.config[key];
+        } catch {
+            // Ugly workaround but apparently it's impossible to load
+            // empty environment variables via docker-compose's env
+            // file feature.
+            return '' as unknown as T;
+        }
     }
 }
 
