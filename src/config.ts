@@ -29,6 +29,13 @@ const schema: Joi.ObjectSchema = Joi.object({
     MAINNET_ORACLE_WETH: Joi.string()
         .optional()
         .default('0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419'),
+    OPTIMISM_NODE_API_URL: Joi.string().uri().optional().default('https://mainnet.optimism.io'),
+    OPTIMISM_ORACLE_WBTC: Joi.string()
+        .optional()
+        .default('0xd702dd976fb76fffc2d3963d037dfdae5b04e593'),
+    OPTIMISM_ORACLE_WETH: Joi.string()
+        .optional()
+        .default('0x13e3ee699d1909e989722e753853ae30b17e08c5'),
     PREMIA_ARBITRUM_POOL_WBTC: Joi.string()
         .optional()
         .default('0xb5fE3bc2eF4c34cC233922dfF2Fcb1B1BF89A38E'),
@@ -59,6 +66,14 @@ const schema: Joi.ObjectSchema = Joi.object({
         .uri()
         .optional()
         .default('https://api.thegraph.com/subgraphs/name/premiafinance/premiav2'),
+    PREMIA_OPTIMISM_POOL_WBTC: Joi.string().optional().allow(''),
+    PREMIA_OPTIMISM_POOL_WETH: Joi.string()
+        .optional()
+        .default('0x9623bf820a0b9db26aff216fcfbc119c92d3cd96'),
+    PREMIA_OPTIMISM_SUBGRAPH_API_URL: Joi.string()
+        .uri()
+        .optional()
+        .default('https://api.thegraph.com/subgraphs/name/premiafinance/premia-optimism'),
 });
 
 export class ConfigService {

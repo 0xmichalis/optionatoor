@@ -6,7 +6,7 @@ import { config } from '../../config';
 import { getOptionsQuery } from './queries';
 import { IOption, oKey } from '../../types/option';
 
-type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet';
+type SupportedNetwork = 'Arbitrum' | 'Fantom' | 'Mainnet' | 'Optimism';
 
 class PremiaClient {
     // Whether the class is initialized
@@ -19,7 +19,7 @@ class PremiaClient {
     private multicallProvider: MulticallProvider;
     private graphClient: GraphService;
 
-    private allowedPairs = ['WBTC/DAI', 'WETH/DAI'];
+    private allowedPairs = ['WBTC/DAI', 'WETH/DAI', 'WETH/USDC'];
 
     // Contract sizes
     private wbtcContractSize: string;
@@ -112,6 +112,7 @@ class PremiaClient {
                     pool = this.wbtcPool;
                     break;
                 case 'WETH/DAI':
+                case 'WETH/USDC':
                     contractSize = this.wethContractSize;
                     decimals = this.wethDecimals;
                     pool = this.wethPool;
@@ -150,6 +151,7 @@ class PremiaClient {
                     price = wbtcPrice;
                     break;
                 case 'WETH/DAI':
+                case 'WETH/USDC':
                     asset = 'ETH';
                     contractSize = this.wethContractSize;
                     price = wethPrice;

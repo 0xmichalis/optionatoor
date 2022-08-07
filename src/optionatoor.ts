@@ -18,6 +18,7 @@ export default class Optionatoor {
     private premiaArbitrum: PremiaClient;
     private premiaFantom: PremiaClient;
     private premiaMainnet: PremiaClient;
+    private premiaOptimism: PremiaClient;
 
     // Additional fee to include in spread calculations as
     // a naive way to account for various fees (eg., gas fees)
@@ -63,6 +64,15 @@ export default class Optionatoor {
             config.get('MAINNET_ORACLE_WBTC'),
             config.get('MAINNET_ORACLE_WETH')
         );
+        this.premiaOptimism = new PremiaClient(
+            'Optimism',
+            config.get('OPTIMISM_NODE_API_URL'),
+            config.get('PREMIA_OPTIMISM_SUBGRAPH_API_URL'),
+            config.get('PREMIA_OPTIMISM_POOL_WBTC'),
+            config.get('PREMIA_OPTIMISM_POOL_WETH'),
+            config.get('OPTIMISM_ORACLE_WBTC'),
+            config.get('OPTIMISM_ORACLE_WETH')
+        );
 
         // Setup Discord client
         this.discordClient = new DiscordService();
@@ -80,6 +90,7 @@ export default class Optionatoor {
         await this.premiaArbitrum.init();
         await this.premiaFantom.init();
         await this.premiaMainnet.init();
+        await this.premiaOptimism.init();
         this.isInitialized = true;
     }
 
@@ -136,6 +147,16 @@ export default class Optionatoor {
             }
         } catch (e) {
             console.log(`Failed to fetch options from Premia Fantom: ${e}`);
+        }
+
+        try {
+            console.log('\x1b[1mGetting Premia (Optimism) buys...\x1b[0m');
+            const premiaOptimismOptions = await this.premiaOptimism.getOptions(isBuy);
+            for (let o of premiaOptimismOptions) {
+                this.potentiallySet(o, buys, isBuy);
+            }
+        } catch (e) {
+            console.log(`Failed to fetch options from Premia Optimism: ${e}`);
         }
 
         try {
