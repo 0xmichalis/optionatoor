@@ -1,21 +1,27 @@
+import { utils } from 'ethers';
+
+import { IOption } from '../types/option';
+
 export const sleep = async (seconds: number) => {
     return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 };
 
-export const arbitrageMessage = (
-    asset: string,
-    size: string,
-    buyMarket: string,
-    buyLink: string,
-    buyPrice: string,
-    sellMarket: string,
-    sellLink: string,
-    sellPrice: string
-): string => {
-    return `> Asset: **${asset}**
-> Contract size: **${size}**
-> Buy at **$${trimDecimals(buyPrice)}** in ${buyMarket} (**${buyLink}**)
-> Sell at **$${trimDecimals(sellPrice)}** in ${sellMarket} (**${sellLink}**)`;
+export const arbitrageMessage = (buy: IOption, sell: IOption): string => {
+    return `${stringifyOption(buy)}
+${stringifyOptionWhereAndHowMuch(sell)}`;
+};
+
+export const stringifyOption = (o: IOption): string => {
+    return `> Asset: **${o.asset}**
+> Contract size: **${o.contractSize}**
+${stringifyOptionWhereAndHowMuch(o)}`;
+};
+
+const stringifyOptionWhereAndHowMuch = (o: IOption): string => {
+    const premium = utils.formatUnits(o.premium);
+    return `> ${o.isBuy ? 'Buy' : 'Sell'} at **$${trimDecimals(premium)}** in ${o.market} (**${
+        o.link
+    }**)`;
 };
 
 const trimDecimals = (price: string): string => {
