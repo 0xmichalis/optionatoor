@@ -42,7 +42,8 @@ class LyraClient {
                     contractSize = utils.parseUnits(this.ethContractSize);
                     break;
                 default:
-                    throw new Error(`unknown market: ${market.name}`);
+                    console.log(`unknown market: ${market.name}`);
+                    continue;
             }
 
             for (let board of market.liveBoards()) {
